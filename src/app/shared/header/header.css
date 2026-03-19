@@ -26,6 +26,8 @@
   align-items: center;
   gap: 14px;
   color: #ffffff;
+  cursor: pointer;
+   text-decoration: none;
 }
 
 .logo-box {
@@ -48,6 +50,7 @@
   font-size: 2rem;
   line-height: 1;
   font-weight: 800;
+   
 }
 
 .logo-text p {
@@ -69,6 +72,8 @@
   font-weight: 600;
   position: relative;
   transition: 0.25s ease;
+  text-decoration: none;
+
 }
 
 .nav a::after {
@@ -80,6 +85,7 @@
   height: 2px;
   background: linear-gradient(90deg, #f59e0b, #fde68a);
   transition: 0.25s ease;
+  
 }
 
 .nav a:hover {
@@ -150,6 +156,7 @@
   .logo {
     width: 100%;
     justify-content: center;
+    text-decoration: none;
   }
 
   .actions {
