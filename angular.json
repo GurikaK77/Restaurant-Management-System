@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "Restraunt-Management-System": {
+    "restaurant-Management-System": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -57,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "Restraunt-Management-System:build:production"
+              "buildTarget": "restaurant-Management-System:build:production"
             },
             "development": {
-              "buildTarget": "Restraunt-Management-System:build:development"
+              "buildTarget": "restaurant-Management-System:build:development"
             }
           },
           "defaultConfiguration": "development"
