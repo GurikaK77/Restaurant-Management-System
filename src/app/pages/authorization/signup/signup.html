@@ -1,0 +1,94 @@
+<div class="register-page">
+  <div class="register-wrapper">
+    <div class="register-info">
+      <span class="info-badge">Velora Restaurant System</span>
+
+      <h1>Create your customer account</h1>
+
+      <p class="info-text">
+        Sign up to access your profile, manage your personal information and continue
+        to restaurant reservations from a clean and modern dashboard.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>User Account</h3>
+          <p>Create your profile with username, email and password.</p>
+        </div>
+
+        <div class="info-card">
+          <h3>Personal Details</h3>
+          <p>Add your first name, last name, phone number and address.</p>
+        </div>
+
+        <div class="info-card">
+          <h3>Reservations Later</h3>
+          <p>Table booking is separate and comes after registration and login.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="register-card">
+      <div class="card-header">
+        <h2>Sign Up</h2>
+        <p>Create your account to enter the restaurant reservation system</p>
+      </div>
+
+      <form class="register-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input id="firstName" type="text" placeholder="Enter your first name" />
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input id="lastName" type="text" placeholder="Enter your last name" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" type="text" placeholder="Choose a username" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input id="email" type="email" placeholder="Enter your email address" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input id="phone" type="text" placeholder="Enter your phone number" />
+          </div>
+
+          <div class="form-group">
+            <label for="address">Address</label>
+            <input id="address" type="text" placeholder="Enter your address" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Create a password" />
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input id="confirmPassword" type="password" placeholder="Repeat your password" />
+          </div>
+        </div>
+
+        <button type="submit" class="register-btn">Create Account</button>
+
+        <p class="login-text">
+          Already a member?
+          <!-- <a routerLink="sign-in" href="">Sign in</a> -->
+           <button routerLink="sign-in" >Sign-In</button>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
