@@ -4,14 +4,11 @@
   padding: 32px 0 80px;
   position: relative;
   z-index: 1;
-  background:
-    radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 22%),
-    radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.08), transparent 20%);
 }
 
 .hero-section {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
   gap: 24px;
   margin-bottom: 28px;
   align-items: stretch;
@@ -33,14 +30,14 @@
   position: relative;
   overflow: hidden;
   padding: 44px;
-  min-height: 340px;
+  min-height: 360px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .hero-left::before {
-  content: "";
+  content: '';
   position: absolute;
   width: 260px;
   height: 260px;
@@ -52,7 +49,7 @@
 }
 
 .hero-left::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 220px;
   height: 220px;
@@ -66,7 +63,8 @@
 .page-badge,
 .hero-left h1,
 .hero-description,
-.hero-actions {
+.hero-actions,
+.hero-mini-stats {
   position: relative;
   z-index: 1;
 }
@@ -88,8 +86,8 @@
 .hero-left h1 {
   margin: 0 0 18px;
   color: #f8fafc;
-  font-size: clamp(2.1rem, 4vw, 4rem);
-  line-height: 1.06;
+  font-size: clamp(2.2rem, 4vw, 4.1rem);
+  line-height: 1.04;
   max-width: 720px;
 }
 
@@ -110,12 +108,14 @@
 
 .primary-btn,
 .secondary-btn {
-  min-width: 170px;
+  min-width: 180px;
   padding: 14px 22px;
   border-radius: 14px;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
+  text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
@@ -135,6 +135,32 @@
 .primary-btn:hover,
 .secondary-btn:hover {
   transform: translateY(-2px);
+}
+
+.hero-mini-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.mini-stat {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mini-stat span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.mini-stat strong {
+  color: #f8fafc;
+  font-size: 1rem;
 }
 
 .hero-right {
@@ -183,14 +209,13 @@
 }
 
 .preview-placeholder {
-  min-height: 250px;
+  min-height: 280px;
   flex: 1;
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 14px;
-  text-align: left;
 }
 
 .content-section {
@@ -229,7 +254,8 @@
 
 .stats-grid,
 .two-column-grid,
-.three-column-grid {
+.three-column-grid,
+.feature-layout {
   display: grid;
   gap: 20px;
 }
@@ -238,12 +264,18 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.two-column-grid {
+.two-column-grid,
+.feature-layout {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .three-column-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.side-stack {
+  display: grid;
+  gap: 20px;
 }
 
 .stat-card,
@@ -255,11 +287,11 @@
 
 .stat-card::before,
 .content-card::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 24px;
-  width: 70px;
+  width: 80px;
   height: 3px;
   border-radius: 999px;
   background: linear-gradient(90deg, #f59e0b, transparent);
@@ -273,8 +305,17 @@
   line-height: 1.25;
 }
 
+.card-topline {
+  margin-bottom: 10px;
+  color: #fbbf24;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  font-weight: 800;
+}
+
 .card-placeholder {
-  min-height: 130px;
+  min-height: 150px;
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -282,6 +323,67 @@
   justify-content: flex-start;
   gap: 12px;
   word-break: break-word;
+}
+
+.compact-placeholder {
+  min-height: 120px;
+}
+
+.tall-placeholder {
+  min-height: 320px;
+}
+
+.large-card {
+  min-height: 100%;
+}
+
+.info-banner-card {
+  display: flex;
+  align-items: stretch;
+}
+
+.info-banner {
+  width: 100%;
+  border-radius: 18px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(251, 191, 36, 0.14);
+}
+
+.info-banner span {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #fbbf24;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.info-banner h3 {
+  margin: 0 0 10px;
+}
+
+.info-banner p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.8;
+}
+
+.accent-amber::before {
+  background: linear-gradient(90deg, #f59e0b, transparent);
+}
+
+.accent-blue::before {
+  background: linear-gradient(90deg, #38bdf8, transparent);
+}
+
+.accent-emerald::before {
+  background: linear-gradient(90deg, #34d399, transparent);
+}
+
+.accent-violet::before {
+  background: linear-gradient(90deg, #a78bfa, transparent);
 }
 
 .card-placeholder app-summary-info,
@@ -303,46 +405,6 @@
   display: block;
 }
 
-.tall-placeholder {
-  min-height: 260px;
-}
-
-.large-card {
-  min-height: 100%;
-}
-
-.role-card {
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(15, 23, 42, 0.94));
-}
-
-.role-card:first-child {
-  border-left: 4px solid #f59e0b;
-}
-
-.role-card:last-child {
-  border-left: 4px solid #38bdf8;
-}
-
-.role-card h3 {
-  color: #fbbf24;
-  margin-bottom: 16px;
-}
-
-.role-card ul {
-  margin: 0;
-  padding-left: 18px;
-  color: #cbd5e1;
-  line-height: 1.9;
-}
-
-.role-card li + li {
-  margin-top: 6px;
-}
-
-.role-card li::marker {
-  color: #f59e0b;
-}
-
 @media (max-width: 1200px) {
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -359,12 +421,10 @@
     padding: 24px 0 60px;
   }
 
-  .hero-section {
-    grid-template-columns: 1fr;
-  }
-
+  .hero-section,
   .two-column-grid,
-  .three-column-grid {
+  .three-column-grid,
+  .feature-layout {
     grid-template-columns: 1fr;
   }
 
@@ -382,7 +442,8 @@
   .hero-left,
   .hero-right,
   .stat-card,
-  .content-card {
+  .content-card,
+  .preview-card {
     border-radius: 18px;
   }
 
@@ -396,7 +457,9 @@
 
   .stats-grid,
   .two-column-grid,
-  .three-column-grid {
+  .three-column-grid,
+  .feature-layout,
+  .hero-mini-stats {
     grid-template-columns: 1fr;
     gap: 16px;
   }
@@ -421,7 +484,7 @@
   }
 
   .tall-placeholder {
-    min-height: 180px;
+    min-height: 200px;
   }
 
   .section-header h2 {

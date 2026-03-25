@@ -1,20 +1,29 @@
 <div class="home-page">
-  <section class="hero-section">
+  <section class="hero-section" id="overview">
     <div class="hero-left">
       <span class="page-badge">Restaurant Reservation System</span>
 
-      <h1>
-        Smart management for
-        reservations, menus and customers
-      </h1>
+      <h1>Smart control for reservations, menus and customer data</h1>
 
-      <!-- <p class="hero-description">
-       
-      </p> -->
+      <p class="hero-description">
+        A cleaner restaurant dashboard where reservations, menus, users and restaurant
+        details are grouped into readable sections instead of one long mixed page.
+      </p>
 
       <div class="hero-actions">
-        <button type="button" class="primary-btn">View Reservations</button>
-        <button type="button" class="secondary-btn">View Menus</button>
+        <a routerLink="/main" fragment="reservations" class="primary-btn">View Reservations</a>
+        <a routerLink="/main" fragment="menus" class="secondary-btn">Explore Menus</a>
+      </div>
+
+      <div class="hero-mini-stats">
+        <div class="mini-stat">
+          <span>Users</span>
+          <strong>Registration + Login</strong>
+        </div>
+        <div class="mini-stat">
+          <span>Flow</span>
+          <strong>Profile to booking</strong>
+        </div>
       </div>
     </div>
 
@@ -22,273 +31,179 @@
       <div class="preview-card">
         <div class="preview-header">
           <h3>Dashboard Preview</h3>
-          <span>Frontend Layout</span>
+          <span>Live summary block</span>
         </div>
 
-        <!--
-          - total customers
-          - total reservations
-          - total menus
-          - total restaurants
-        -->
         <div class="preview-placeholder">
-          <!-- summary ინფორმაცია API-დან. -->
           <app-summary-info></app-summary-info>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="stats">
     <div class="section-header">
       <span>Overview</span>
-      <h2>System Overview</h2>
-      <!-- <p>
-       
-      </p> -->
+      <h2>Key numbers at a glance</h2>
+      <p>Important system metrics grouped into compact cards for a faster first look.</p>
     </div>
 
     <div class="stats-grid">
-      <article class="stat-card">
+      <article class="stat-card accent-amber">
+        <div class="card-topline">Customer data</div>
         <h3>Total Customers</h3>
-
-        <!-- API: მომხმარებლების რაოდენობა -->
-
-        <div class="card-placeholder">
-
-         მომხმარებლების საერთო რაოდენობა.
-         <app-total-customers></app-total-customers>
-
+        <div class="card-placeholder compact-placeholder">
+          <app-total-customers></app-total-customers>
         </div>
       </article>
 
-      <article class="stat-card">
+      <article class="stat-card accent-blue">
+        <div class="card-topline">Today’s activity</div>
         <h3>Today Reservations</h3>
-
-        <!-- API: დღევანდელი ჯავშნების რაოდენობა -->
-         
-        <div class="card-placeholder">
-         დღევანდელი ჯავშნების რაოდენობა.
-         <app-today-reservations></app-today-reservations>
+        <div class="card-placeholder compact-placeholder">
+          <app-today-reservations></app-today-reservations>
         </div>
       </article>
 
-      <article class="stat-card">
+      <article class="stat-card accent-emerald">
+        <div class="card-topline">Menu records</div>
         <h3>Total Menus</h3>
-        <!-- API: მენიუების რაოდენობა -->
-        <div class="card-placeholder">
-          მენიუების საერთო რაოდენობა.
+        <div class="card-placeholder compact-placeholder">
           <app-total-menus></app-total-menus>
         </div>
       </article>
 
-      <article class="stat-card">
+      <article class="stat-card accent-violet">
+        <div class="card-topline">Restaurant system</div>
         <h3>Total Restaurants</h3>
-        <!-- API: რესტორნების რაოდენობა -->
-        <div class="card-placeholder">
-          რესტორნების საერთო რაოდენობა.
+        <div class="card-placeholder compact-placeholder">
           <app-total-restaurants></app-total-restaurants>
         </div>
       </article>
     </div>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="reservations">
     <div class="section-header">
       <span>Reservations</span>
-      <h2>Reservation Management</h2>
-      <p>
-    Reservation API.
-      </p>
+      <h2>Reservation management space</h2>
+      <p>Keep booking lists and booking status in one connected section for easier reading.</p>
     </div>
 
-    <div class="two-column-grid">
+    <div class="feature-layout">
       <article class="content-card large-card">
+        <div class="card-topline">Reservation data</div>
         <h3>Reservation List</h3>
-
-        <!--
-          GetAllReservations()
-          GetReservationsByCustomer(customerId)
-          GetReservationsByDate(date)
-
-          *ngFor="let reservation of reservations"
-        -->
         <div class="card-placeholder tall-placeholder">
-          ჯავშნების სია (API).
           <app-reservation-list></app-reservation-list>
         </div>
       </article>
 
-      <article class="content-card">
-        <h3>Reservation Status</h3>
+      <div class="side-stack">
+        <article class="content-card">
+          <div class="card-topline">Status overview</div>
+          <h3>Reservation Status</h3>
+          <div class="card-placeholder">
+            <app-reservation-status></app-reservation-status>
+          </div>
+        </article>
 
-        <!--
-          Pending / Confirmed / Canceled სტატისტიკა
-        -->
-        <div class="card-placeholder">
-          ჯავშნების სტატუსები.
-<app-reservation-status></app-reservation-status>
-        </div>
-      </article>
+        <article class="content-card info-banner-card">
+          <div class="info-banner">
+            <span>Booking flow</span>
+            <h3>Users register first, then continue to reservations.</h3>
+            <p>
+              The layout now separates authentication from reservation management so the
+              dashboard feels more structured.
+            </p>
+          </div>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="menus">
     <div class="section-header">
       <span>Menus</span>
-      <h2>Menu & Dishes</h2>
-      <p>
-        Menu API.
-      </p>
+      <h2>Menu and dish sections</h2>
+      <p>Menu cards are grouped together so dish content is no longer mixed with user and restaurant blocks.</p>
     </div>
 
     <div class="three-column-grid">
       <article class="content-card">
+        <div class="card-topline">Menu collection</div>
         <h3>All Menus</h3>
-
-        <!--
-          GetMenus()
-        -->
         <div class="card-placeholder">
-           ყველა მენიუ.
-           <app-all-menu></app-all-menu>
+          <app-all-menu></app-all-menu>
         </div>
       </article>
 
       <article class="content-card">
+        <div class="card-topline">Dish availability</div>
         <h3>Available Dishes</h3>
-
-        <!--
-          GetMenusWithAvailableDishes()
-        -->
         <div class="card-placeholder">
-           ხელმისაწვდომი კერძები.
-           <app-available-dishes></app-available-dishes>
+          <app-available-dishes></app-available-dishes>
         </div>
       </article>
 
       <article class="content-card">
+        <div class="card-topline">Detailed item</div>
         <h3>Dish Details</h3>
-
-        <!--
-          GetDishById(dishId)
-        -->
         <div class="card-placeholder">
-           კონკრეტული კერძის დეტალები.
-           <app-dish-details></app-dish-details>
+          <app-dish-details></app-dish-details>
         </div>
       </article>
     </div>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="users">
     <div class="section-header">
       <span>Users</span>
-      <h2>Users & Profiles</h2>
-      <p>
-         User და Admin ფუნქციებს.
-      </p>
+      <h2>Customer and profile area</h2>
+      <p>User registration, login and customer information now sit inside their own dedicated section.</p>
     </div>
 
     <div class="two-column-grid">
       <article class="content-card">
+        <div class="card-topline">Customer records</div>
         <h3>Customers</h3>
-
-        <!--
-          for GetAllCustomers()
-        -->
         <div class="card-placeholder">
-         მომხმარებლების სია.
-         <app-customers></app-customers>
+          <app-customers></app-customers>
         </div>
       </article>
 
       <article class="content-card">
+        <div class="card-topline">Account details</div>
         <h3>User Profile</h3>
-
-        <!--
-          for GetProfile()
-        -->
         <div class="card-placeholder">
-          მომხმარებლის პროფილის ინფორმაცია. 
           <app-user-profile></app-user-profile>
         </div>
       </article>
     </div>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="restaurant">
     <div class="section-header">
       <span>Restaurant</span>
-      <h2>Restaurant Information</h2>
-      <p>
-       restaurant entity-ს მონაცემები.
-      </p>
+      <h2>Restaurant information and seating</h2>
+      <p>Core restaurant details and capacity information are grouped together at the end of the main page.</p>
     </div>
 
     <div class="two-column-grid">
       <article class="content-card">
+        <div class="card-topline">Restaurant profile</div>
         <h3>Restaurant Details</h3>
-
-        <!--
-          - RestaurantName
-          - Location
-          - Phone
-          - Email
-        -->
         <div class="card-placeholder">
-          რესტორნის დეტალები. (API)
           <app-restaurant-details></app-restaurant-details>
-
         </div>
       </article>
 
       <article class="content-card">
-        <h3>Capacity & Seats</h3>
-
-        <!--
-          - TotalTables
-          - SeatsPerTable
-          - AreSeatsAvailable()
-        -->
+        <div class="card-topline">Capacity</div>
+        <h3>Capacity Seats</h3>
         <div class="card-placeholder">
-         ტევადობის და ადგილების ინფორმაცია. (API)
-         <app-capacity-seats></app-capacity-seats>
+          <app-capacity-seats></app-capacity-seats>
         </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="content-section">
-    <div class="section-header">
-      <span>Access</span>
-      <h2>Role Based Access</h2>
-      
-    </div>
-
-    <div class="two-column-grid">
-      <article class="content-card role-card">
-        <h3>Admin</h3>
-        <ul>
-          <li>Get all customers</li>
-          <li>Get user by id</li>
-          <li>Update user details</li>
-          <li>Remove user</li>
-          <li>Manage reservations</li>
-          <li>Manage menus and dishes</li>
-        </ul>
-      </article>
-
-      <article class="content-card role-card">
-        <h3>Customer</h3>
-        <ul>
-          <li>User registration</li>
-          <li>Login / logout</li>
-          <li>Get profile</li>
-          <li>Update profile</li>
-          <li>Make reservation</li>
-          <li>Browse menus</li>
-        </ul>
       </article>
     </div>
   </section>

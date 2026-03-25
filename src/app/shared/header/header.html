@@ -1,24 +1,24 @@
 <header class="header">
   <div class="header-container">
-    <a href="#" class="logo">
-      <div class="logo-icon">V</div>
+    <a routerLink="/main" class="logo" aria-label="Velora home">
+      <div class="logo-box">V</div>
       <div class="logo-text">
         <h2>Velora</h2>
-        <p>Restaurant Management</p>
+        <p>Restaurant Management System</p>
       </div>
     </a>
 
-    <nav class="nav-links">
-      <a href="">Home</a>
-      <a href="">Reservations</a>
-      <a href="">Menus</a>
-      <a href="">Customers</a>
-      <a href="">About</a>
+    <nav class="nav">
+      <a fragment="overview" routerLinkActive="active-link">Overview</a>
+      <a fragment="reservations" routerLinkActive="active-link">Reservations</a>
+      <a fragment="menus" routerLinkActive="active-link">Menus</a>
+      <a fragment="users" routerLinkActive="active-link">Users</a>
+      <a fragment="restaurant" routerLinkActive="active-link">Restaurant</a>
     </nav>
 
-    <div class="header-actions">
-      <button routerLink="sign-in" class="login-btn">Login</button>
-      <button routerLink="sign-up" class="register-btn">Sign-Up</button>
+    <div class="actions">
+      <a routerLink="/login" class="login-btn">Login</a>
+      <a routerLink="/register" class="start-btn">Sign Up</a>
     </div>
   </div>
 </header>

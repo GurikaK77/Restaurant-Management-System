@@ -1,0 +1,251 @@
+.auth-page {
+  min-height: calc(100vh - 180px);
+  padding: 34px 20px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-wrapper {
+  width: min(1200px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+.auth-info {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.12);
+  border-radius: 30px;
+  padding: 42px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.auth-info h1 {
+  margin: 0 0 14px;
+  color: #ffffff;
+  font-size: 3rem;
+  line-height: 1.05;
+}
+
+.info-text {
+  margin: 0 0 28px;
+  color: #d1d5db;
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 560px;
+}
+
+.info-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.info-card h3 {
+  margin: 0 0 10px;
+  color: #fbbf24;
+  font-size: 1.05rem;
+}
+
+.info-card p {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 0.94rem;
+  line-height: 1.65;
+}
+
+.auth-card {
+  background: #ffffff;
+  border-radius: 30px;
+  padding: 36px 32px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-header {
+  margin-bottom: 24px;
+}
+
+.card-header h2 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 2rem;
+}
+
+.card-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #374151;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.form-group input {
+  width: 100%;
+  height: 54px;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 0 16px;
+  background: #f9fafb;
+  color: #111827;
+  font-size: 0.96rem;
+  outline: none;
+  transition: 0.25s ease;
+}
+
+.form-group input:focus {
+  border-color: #f59e0b;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
+}
+
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4b5563;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  accent-color: #f59e0b;
+}
+
+.forgot-link {
+  color: #d97706;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.auth-btn {
+  margin-top: 8px;
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f59e0b, #facc15);
+  color: #111827;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.26);
+}
+
+.auth-btn:hover {
+  transform: translateY(-2px);
+}
+
+.switch-text {
+  margin: 10px 0 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.switch-text a {
+  color: #d97706;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.switch-text a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1050px) {
+  .auth-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-info h1 {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .auth-page {
+    padding: 20px 12px 0;
+  }
+
+  .auth-info,
+  .auth-card {
+    padding: 24px 18px;
+    border-radius: 22px;
+  }
+
+  .auth-info h1 {
+    font-size: 2rem;
+  }
+
+  .card-header h2 {
+    font-size: 1.65rem;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-group input,
+  .auth-btn {
+    height: 52px;
+  }
+}
