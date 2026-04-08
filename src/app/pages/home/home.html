@@ -33,7 +33,7 @@
           <h3>Dashboard Preview</h3>
           <span>Live summary block</span>
         </div>
-
+ 
         <div class="preview-placeholder">
           <app-summary-info></app-summary-info>
         </div>
@@ -207,4 +207,41 @@
       </article>
     </div>
   </section>
+
+  <section class="content-section" id="roles">
+    <div class="section-header">
+      <span>Access</span>
+      <h2>Role Based Access</h2>
+      <p>Different actions are grouped by role so it is easier to understand what admins and customers can do inside the system.</p>
+    </div>
+
+    <div class="two-column-grid">
+      <article class="content-card role-card admin-role">
+        <div class="card-topline">Admin permissions</div>
+        <h3>Admin</h3>
+        <ul>
+          <li>Get all customers</li>
+          <li>Get user by id</li>
+          <li>Update user details</li>
+          <li>Remove user</li>
+          <li>Manage reservations</li>
+          <li>Manage menus and dishes</li>
+        </ul>
+      </article>
+
+      <article class="content-card role-card customer-role">
+        <div class="card-topline">Customer permissions</div>
+        <h3>Customer</h3>
+        <ul>
+          <li>User registration</li>
+          <li>Login / logout</li>
+          <li>Get profile</li>
+          <li>Update profile</li>
+          <li>Make reservation</li>
+          <li>Browse menus</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
 </div>

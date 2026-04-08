@@ -497,3 +497,31 @@
     font-size: 19px;
   }
 }
+
+
+.role-card {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(15, 23, 42, 0.94));
+}
+
+.admin-role {
+  border-left: 4px solid #f59e0b;
+}
+
+.customer-role {
+  border-left: 4px solid #38bdf8;
+}
+
+.role-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #cbd5e1;
+  line-height: 1.9;
+}
+
+.role-card li + li {
+  margin-top: 6px;
+}
+
+.role-card li::marker {
+  color: #f59e0b;
+}
