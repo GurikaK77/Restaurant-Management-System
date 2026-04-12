@@ -1,0 +1,165 @@
+@if (isAdmin$ | async) {
+  <div class="stack">
+    @if (message) {
+      <div class="status-msg" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">{{ message }}</div>
+    }
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Create menu with image</h3>
+          <p class="subtle">Uses <code>POST /api/Menu/CreateMenuWithImage</code>.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Restaurant</label>
+          <select [(ngModel)]="createRestaurantId" name="createRestaurantId">
+            @for (restaurant of restaurants; track restaurant.id) {
+              <option [value]="restaurant.id">{{ restaurant.name }} (#{{ restaurant.id }})</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Menu name</label>
+          <input [(ngModel)]="createName" name="createName" />
+        </div>
+        <div class="field full">
+          <label>Image</label>
+          <input type="file" accept="image/*" (change)="onCreateImage($event)" />
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="primary-action" type="button" (click)="createMenu()">Create menu</button>
+      </div>
+    </section>
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Existing menus</h3>
+          <p class="subtle">Select a menu to update or delete it.</p>
+        </div>
+      </div>
+
+      <div class="entity-list">
+        @for (menu of menus; track menu.id) {
+          <article class="entity-card">
+            <div class="dual-grid">
+              <img class="thumb-image" [src]="proxyService.getImageUrl(menu.imageUrl)" [alt]="menu.name" />
+              <div class="stack">
+                <div class="entity-title">
+                  <div>
+                    <h4>{{ menu.name }}</h4>
+                    <p class="subtle">Restaurant ID {{ menu.restaurantId }} · Menu ID {{ menu.id }}</p>
+                  </div>
+                </div>
+                <div class="actions-row">
+                  <button class="secondary-action" type="button" (click)="useMenuForEdit(menu)">Use in edit form</button>
+                  <button class="danger-action" type="button" (click)="deleteMenu(menu.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <div class="empty-box">No menus loaded. Login first so the backend can return protected menu data.</div>
+        }
+      </div>
+    </section>
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Update selected menu</h3>
+          <p class="subtle">Uses the backend menu update endpoint.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Menu ID</label>
+          <input [(ngModel)]="editMenuId" name="editMenuId" type="number" />
+        </div>
+        <div class="field">
+          <label>Restaurant ID</label>
+          <select [(ngModel)]="editRestaurantId" name="editRestaurantId">
+            @for (restaurant of restaurants; track restaurant.id) {
+              <option [value]="restaurant.id">{{ restaurant.name }} (#{{ restaurant.id }})</option>
+            }
+          </select>
+        </div>
+        <div class="field full">
+          <label>Menu name</label>
+          <input [(ngModel)]="editName" name="editName" />
+        </div>
+      </div>
+      <div class="actions-row">
+        <button class="primary-action" type="button" (click)="updateMenu()">Update menu</button>
+      </div>
+    </section>
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Dish tools</h3>
+          <p class="subtle">Uses <code>AddDish</code>, <code>GetDishById</code> and <code>RemoveDish</code>. The backend does not expose a full dish list, so this section works by menu ID and dish ID.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Menu ID</label>
+          <input [(ngModel)]="dishMenuId" name="dishMenuId" type="number" />
+        </div>
+        <div class="field">
+          <label>Dish name</label>
+          <input [(ngModel)]="dishName" name="dishName" />
+        </div>
+        <div class="field">
+          <label>Dish price</label>
+          <input [(ngModel)]="dishPrice" name="dishPrice" type="number" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Dish image</label>
+          <input type="file" accept="image/*" (change)="onDishImage($event)" />
+        </div>
+      </div>
+      <div class="actions-row">
+        <button class="primary-action" type="button" (click)="addDish()">Add dish to menu</button>
+      </div>
+
+      <div class="dual-grid">
+        <div class="field">
+          <label>Lookup dish by ID</label>
+          <input [(ngModel)]="lookupDishId" name="lookupDishId" type="number" />
+        </div>
+        <div class="field">
+          <label>Remove dish by ID</label>
+          <input [(ngModel)]="removeDishId" name="removeDishId" type="number" />
+        </div>
+      </div>
+      <div class="actions-row">
+        <button class="secondary-action" type="button" (click)="lookupDish()">Load dish</button>
+        <button class="danger-action" type="button" (click)="removeDish()">Remove dish</button>
+      </div>
+
+      @if (selectedDish) {
+        <article class="entity-card">
+          <div class="dual-grid">
+            <img class="thumb-image" [src]="proxyService.getImageUrl(selectedDish.imageUrl)" [alt]="selectedDish.name" />
+            <div class="stack">
+              <h4>{{ selectedDish.name }}</h4>
+              <div class="badge-row">
+                <span class="meta-chip">Dish ID {{ selectedDish.id }}</span>
+                <span class="meta-chip">{{ selectedDish.price }} ₾</span>
+                <span class="meta-chip">{{ selectedDish.isAvaiable ? 'Available' : 'Unavailable' }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      }
+    </section>
+  </div>
+} @else {
+  <div class="empty-box">Admin login is required for menu and dish management.</div>
+}

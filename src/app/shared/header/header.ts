@@ -13,6 +13,7 @@ import { ProxyService } from '../../services/proxy.service';
 export class Header {
   profile$: Observable<any | null>;
   isLoggedIn$: Observable<boolean>;
+  isAdmin$: Observable<boolean>;
 
   constructor(
     public proxyService: ProxyService,
@@ -20,6 +21,7 @@ export class Header {
   ) {
     this.profile$ = this.proxyService.watchProfile();
     this.isLoggedIn$ = this.proxyService.authState$.pipe(map((token) => !!token));
+    this.isAdmin$ = this.proxyService.watchIsAdmin();
   }
 
   logout() {

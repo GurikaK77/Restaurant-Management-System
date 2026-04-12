@@ -1,0 +1,82 @@
+<div class="stack">
+  @if (message) {
+    <div class="status-msg" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">{{ message }}</div>
+  }
+
+  @if (profile$ | async; as profile) {
+    @if (profile) {
+      <section class="entity-card">
+        <div class="entity-title">
+          <div>
+            <h3>Edit account</h3>
+            <p class="subtle">Uses the backend update-profile endpoint for the signed-in user.</p>
+          </div>
+          <div class="badge-row">
+            @if (roles$ | async; as roles) {
+              @for (role of roles; track role.id) {
+                <span class="role-chip">{{ role.name }}</span>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Username</label>
+            <input [(ngModel)]="username" name="username" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input [(ngModel)]="email" name="email" type="email" />
+          </div>
+          <div class="field full">
+            <label>New password</label>
+            <input [(ngModel)]="password" name="password" type="password" placeholder="Leave blank to keep your old one if backend ignores it" />
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="primary-action" type="button" [disabled]="savingAccount" (click)="saveAccount()">
+            {{ savingAccount ? 'Saving...' : 'Save account changes' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="entity-card">
+        <div class="entity-title">
+          <div>
+            <h3>Edit personal info</h3>
+            <p class="subtle">Uses the backend personal-info update endpoint.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>First name</label>
+            <input [(ngModel)]="firstName" name="firstName" />
+          </div>
+          <div class="field">
+            <label>Last name</label>
+            <input [(ngModel)]="lastName" name="lastName" />
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input [(ngModel)]="phone" name="phone" />
+          </div>
+          <div class="field">
+            <label>Address</label>
+            <input [(ngModel)]="address" name="address" />
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="primary-action" type="button" [disabled]="savingPersonal" (click)="savePersonal()">
+            {{ savingPersonal ? 'Saving...' : 'Save personal info' }}
+          </button>
+        </div>
+      </section>
+    } @else {
+      <div class="empty-box">Login first to edit your profile.</div>
+    }
+  }
+</div>

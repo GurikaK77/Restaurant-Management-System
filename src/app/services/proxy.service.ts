@@ -1,6 +1,17 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, combineLatest, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  combineLatest,
+  forkJoin,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +29,9 @@ export class ProxyService {
   private profileRefreshSubject = new BehaviorSubject<number>(0);
   profileRefresh$ = this.profileRefreshSubject.asObservable();
 
+  private rolesRefreshSubject = new BehaviorSubject<number>(0);
+  rolesRefresh$ = this.rolesRefreshSubject.asObservable();
+
   private restaurantDishMap: Record<number, number[]> = {
     1: [1, 2, 3, 4],
     2: [5, 6, 7, 8],
@@ -29,7 +43,7 @@ export class ProxyService {
 
   constructor(private http: HttpClient) {}
 
-  login(body: any): Observable<any> {
+  login(body: { username: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/User/Login`, body);
   }
 
@@ -42,6 +56,7 @@ export class ProxyService {
     this.authStateSubject.next(token);
     this.refreshProfile();
     this.refreshReservations();
+    this.refreshRoles();
   }
 
   getToken() {
@@ -53,6 +68,7 @@ export class ProxyService {
     this.authStateSubject.next(null);
     this.refreshProfile();
     this.refreshReservations();
+    this.refreshRoles();
   }
 
   isLoggedIn() {
@@ -65,6 +81,10 @@ export class ProxyService {
 
   refreshProfile() {
     this.profileRefreshSubject.next(Date.now());
+  }
+
+  refreshRoles() {
+    this.rolesRefreshSubject.next(Date.now());
   }
 
   private getAuthOptions() {
@@ -83,12 +103,27 @@ export class ProxyService {
 
   getRestaurants(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/Restaurant/GetAll`).pipe(
+      catchError(() => of([])),
       shareReplay(1)
     );
   }
 
-  getRestaurantById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/Restaurant/GetById/${id}`);
+  getRestaurantById(id: number): Observable<any | null> {
+    return this.http.get<any>(`${this.apiUrl}/Restaurant/GetById/${id}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  addRestaurant(body: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Restaurant/Add`, body, this.getAuthOptions());
+  }
+
+  updateRestaurant(id: number, body: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/Restaurant/Update/${id}`, body, this.getAuthOptions());
+  }
+
+  deleteRestaurant(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Restaurant/Remove/${id}`, this.getAuthOptions());
   }
 
   getMenus(): Observable<any[]> {
@@ -100,6 +135,40 @@ export class ProxyService {
       catchError(() => of([])),
       shareReplay(1)
     );
+  }
+
+  createMenuWithImage(body: { restaurantId: number; name: string; image?: File | null }): Observable<any> {
+    const form = new FormData();
+    form.append('restaurantId', String(body.restaurantId));
+    form.append('name', body.name);
+    if (body.image) {
+      form.append('image', body.image);
+    }
+
+    return this.http.post(`${this.apiUrl}/Menu/CreateMenuWithImage`, form, this.getAuthOptions());
+  }
+
+  updateMenu(id: number, body: { restaurantId: number; name: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/Menu/UpdateMenu/${id}`, body, this.getAuthOptions());
+  }
+
+  deleteMenu(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Menu/DeleteMenu/${id}`, this.getAuthOptions());
+  }
+
+  addDishToMenu(menuId: number, body: { name: string; price: number; image?: File | null }): Observable<any> {
+    const form = new FormData();
+    form.append('name', body.name);
+    form.append('price', String(body.price));
+    if (body.image) {
+      form.append('image', body.image);
+    }
+
+    return this.http.post(`${this.apiUrl}/Menu/AddDish/${menuId}`, form, this.getAuthOptions());
+  }
+
+  removeDish(dishId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Menu/RemoveDish/${dishId}`, this.getAuthOptions());
   }
 
   getDishById(id: number): Observable<any | null> {
@@ -128,12 +197,78 @@ export class ProxyService {
     );
   }
 
+  getUserById(id: number): Observable<any | null> {
+    if (!this.isLoggedIn()) {
+      return of(null);
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/User/GetById/${id}`, this.getAuthOptions()).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  updateUserProfile(id: number, body: { username: string; email: string; password: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/User/UpdateProfile/${id}`, body, this.getAuthOptions()).pipe(
+      tap(() => this.refreshProfile())
+    );
+  }
+
+  updatePersonalInfo(id: number, body: { firstName: string; lastName: string; phone: string; address: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/User/UpdatePersonalInfo/${id}`, body, this.getAuthOptions()).pipe(
+      tap(() => this.refreshProfile())
+    );
+  }
+
+  deleteMyProfile(): Observable<any> {
+    if (!this.isLoggedIn()) {
+      return of(null);
+    }
+
+    return this.http.delete(`${this.apiUrl}/User/DeleteProfile`, this.getAuthOptions());
+  }
+
+  deleteUserById(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/User/DeleteProfile/${id}`, this.getAuthOptions());
+  }
+
   getUserRoles(): Observable<any[]> {
     if (!this.isLoggedIn()) {
       return of([]);
     }
 
     return this.http.get<any[]>(`${this.apiUrl}/User/GetRolesById`, this.getAuthOptions()).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  watchRoles(): Observable<any[]> {
+    return combineLatest([this.authState$, this.rolesRefresh$]).pipe(
+      switchMap(([token]) => token ? this.getUserRoles() : of([]))
+    );
+  }
+
+  getRolesForUser(id: number): Observable<any[]> {
+    if (!this.isLoggedIn()) {
+      return of([]);
+    }
+
+    return this.http.get<any[]>(`${this.apiUrl}/User/GetRoles/${id}`, this.getAuthOptions()).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  watchIsAdmin(): Observable<boolean> {
+    return this.watchRoles().pipe(
+      map((roles) => roles.some((role) => String(role.name).toLowerCase() === 'admin'))
+    );
+  }
+
+  getAllUsers(): Observable<any[]> {
+    if (!this.isLoggedIn()) {
+      return of([]);
+    }
+
+    return this.http.get<any[]>(`${this.apiUrl}/Admin/GetAllUsers`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
   }
@@ -148,6 +283,46 @@ export class ProxyService {
     );
   }
 
+  getAllRoles(): Observable<any[]> {
+    if (!this.isLoggedIn()) {
+      return of([]);
+    }
+
+    return this.http.get<any[]>(`${this.apiUrl}/Role/GetAllRoles`, this.getAuthOptions()).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  createRole(body: { name: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Role/CreateRoles`, body, this.getAuthOptions()).pipe(
+      tap(() => this.refreshRoles())
+    );
+  }
+
+  updateRole(id: number, body: { id: number; name: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/Role/UpdateRoles/${id}`, body, this.getAuthOptions()).pipe(
+      tap(() => this.refreshRoles())
+    );
+  }
+
+  deleteRole(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Role/DeleteRoles/${id}`, this.getAuthOptions()).pipe(
+      tap(() => this.refreshRoles())
+    );
+  }
+
+  setUserRole(userId: number, roleId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Admin/SetRole/${userId}/${roleId}`, {}, this.getAuthOptions()).pipe(
+      tap(() => this.refreshRoles())
+    );
+  }
+
+  removeUserRole(userId: number, roleId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Admin/RemoveRole/${userId}/${roleId}`, this.getAuthOptions()).pipe(
+      tap(() => this.refreshRoles())
+    );
+  }
+
   getAllReservations(): Observable<any[]> {
     if (!this.isLoggedIn()) {
       return of([]);
@@ -155,6 +330,26 @@ export class ProxyService {
 
     return this.http.get<any[]>(`${this.apiUrl}/Reservation/GetAll`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
+    );
+  }
+
+  getReservationsByDate(date: string): Observable<any[]> {
+    if (!this.isLoggedIn() || !date) {
+      return of([]);
+    }
+
+    return this.http.get<any[]>(`${this.apiUrl}/Reservation/GetReservationsByDate/${date}`, this.getAuthOptions()).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  getReservationById(id: number): Observable<any | null> {
+    if (!this.isLoggedIn()) {
+      return of(null);
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/Reservation/GetById/${id}`, this.getAuthOptions()).pipe(
+      catchError(() => of(null))
     );
   }
 
@@ -192,7 +387,15 @@ export class ProxyService {
       date: body.date,
       tableNumber: body.tableNumber,
       guestCount: body.guestCount
-    }, this.getAuthOptions());
+    }, this.getAuthOptions()).pipe(
+      tap(() => this.refreshReservations())
+    );
+  }
+
+  updateReservationStatus(id: number, statusId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/Reservation/UpdateStatus/${id}?statusId=${statusId}`, {}, this.getAuthOptions()).pipe(
+      tap(() => this.refreshReservations())
+    );
   }
 
   cancelReservation(id: number): Observable<any> {
@@ -200,15 +403,15 @@ export class ProxyService {
       return of(null);
     }
 
-    return this.http.put(`${this.apiUrl}/Reservation/Cancel/${id}`, {}, this.getAuthOptions());
+    return this.http.put(`${this.apiUrl}/Reservation/Cancel/${id}`, {}, this.getAuthOptions()).pipe(
+      tap(() => this.refreshReservations())
+    );
   }
 
-  deleteMyProfile(): Observable<any> {
-    if (!this.isLoggedIn()) {
-      return of(null);
-    }
-
-    return this.http.delete(`${this.apiUrl}/User/DeleteProfile`, this.getAuthOptions());
+  deleteReservation(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/Reservation/DeleteReservation/${id}`, this.getAuthOptions()).pipe(
+      tap(() => this.refreshReservations())
+    );
   }
 
   getTotalRestaurants(): Observable<number> {
@@ -232,8 +435,8 @@ export class ProxyService {
       return of(null);
     }
 
-    return combineLatest([this.getCustomers(), this.getUserRoles()]).pipe(
-      map(([customers, roles]) => roles.some((role) => role.name === 'Admin') ? customers.length : null),
+    return combineLatest([this.getCustomers(), this.watchIsAdmin()]).pipe(
+      map(([customers, isAdmin]) => isAdmin ? customers.length : null),
       catchError(() => of(null))
     );
   }
@@ -299,13 +502,15 @@ export class ProxyService {
     return combineLatest([
       this.getRestaurants(),
       this.getTotalMenus(),
-      this.watchMyReservations()
+      this.watchMyReservations(),
+      this.watchRoles()
     ]).pipe(
-      map(([restaurants, totalMenus, myReservations]) => ({
+      map(([restaurants, totalMenus, myReservations, roles]) => ({
         totalRestaurants: restaurants.length,
         totalMenus,
         myReservations: myReservations.length,
-        loggedIn: this.isLoggedIn()
+        loggedIn: this.isLoggedIn(),
+        roles
       }))
     );
   }
@@ -346,6 +551,13 @@ export class ProxyService {
 
   getDishDetailsDefault(): Observable<any | null> {
     return this.getDishById(5);
+  }
+
+  getStatusLabel(statusId: number): string {
+    if (statusId === 1) return 'Pending';
+    if (statusId === 2) return 'Confirmed';
+    if (statusId === 3) return 'Canceled';
+    return 'Unknown';
   }
 
   getDisplayName(profile: any): string {
@@ -442,4 +654,3 @@ export class ProxyService {
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
   }
 }
-

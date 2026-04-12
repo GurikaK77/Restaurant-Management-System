@@ -155,3 +155,21 @@
     flex-direction: column;
   }
 }
+
+
+.reservation-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.delete-btn {
+  margin-top: 14px;
+  padding: 12px 18px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(127, 29, 29, 0.3);
+  color: #fecaca;
+}

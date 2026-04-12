@@ -12,8 +12,10 @@
       <a routerLink="/main" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Overview</a>
       <a routerLink="/reservations" routerLinkActive="active-link">Reservations</a>
       <a routerLink="/menus" routerLinkActive="active-link">Menus</a>
-      <a routerLink="/users" routerLinkActive="active-link">Users</a>
       <a routerLink="/restaurant" routerLinkActive="active-link">Restaurant</a>
+      @if (isAdmin$ | async) {
+        <a routerLink="/users" routerLinkActive="active-link">Users</a>
+      }
       @if (isLoggedIn$ | async) {
         <a routerLink="/profile" routerLinkActive="active-link">Profile</a>
       }

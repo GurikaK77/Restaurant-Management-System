@@ -1,9 +1,20 @@
-1. Run the backend Swagger/API first on https://localhost:7067
-2. In the Angular project run:
+FRONTEND-ONLY ZIP
+
+This zip changes ONLY the Angular frontend.
+Backend should stay exactly as you already have it.
+
+Run order:
+1. Start the backend first so Swagger/API is running on https://localhost:7067
+2. Open this frontend folder
+3. Run:
    npm install
    npm start
-3. Open http://localhost:4200
-4. The app is now split into pages: Overview, Reservations, Menus, Users, Restaurant, Profile
-5. proxy.conf.json forwards both /api and /uploads to the backend so menu and dish images can load
-6. Customer users can delete their own profile from the Profile page through DELETE /api/User/DeleteProfile
-7. Admin-only data such as all customers still needs an admin token/role
+
+Admin login:
+- username: NikolozLortki
+- password: Nikoloz123
+
+Notes:
+- /api and /uploads are proxied through proxy.conf.json
+- Menu and dish images come from backend uploads
+- Some backend limitations still exist, like no full dish list endpoint. For that reason the admin dish tools work by menu ID / dish ID.

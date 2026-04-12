@@ -1,0 +1,93 @@
+@if (isAdmin$ | async) {
+  <div class="stack">
+    @if (message) {
+      <div class="status-msg" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">{{ message }}</div>
+    }
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Admin reservation tools</h3>
+          <p class="subtle">Uses the backend admin reservation endpoints to load, filter, update and delete reservations.</p>
+        </div>
+      </div>
+
+      <div class="dual-grid">
+        <div class="field">
+          <label>Filter by date</label>
+          <input [(ngModel)]="searchDate" name="searchDate" type="date" />
+        </div>
+        <div class="field">
+          <label>Lookup reservation by ID</label>
+          <input [(ngModel)]="reservationId" name="reservationId" type="number" min="1" />
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" class="primary-action" (click)="filterByDate()">Apply date filter</button>
+        <button type="button" class="soft-action" (click)="loadAll()">Load all</button>
+        <button type="button" class="secondary-action" (click)="lookupReservation()">Lookup by ID</button>
+      </div>
+    </section>
+
+    @if (selectedReservation) {
+      <section class="entity-card">
+        <div class="entity-title">
+          <div>
+            <h3>Reservation #{{ selectedReservation.id }}</h3>
+            <p class="subtle">Customer {{ selectedReservation.customerId }} · Restaurant {{ selectedReservation.restaurantId }}</p>
+          </div>
+          <span class="status-chip" [class.pending]="selectedReservation.statusId === 1" [class.confirmed]="selectedReservation.statusId === 2" [class.canceled]="selectedReservation.statusId === 3">{{ proxyService.getStatusLabel(selectedReservation.statusId) }}</span>
+        </div>
+      </section>
+    }
+
+    <section class="entity-card">
+      <div class="table-wrap">
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Restaurant</th>
+              <th>Date</th>
+              <th>Table</th>
+              <th>Guests</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of reservations; track item.id) {
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.customerId }}</td>
+                <td>{{ item.restaurantId }}</td>
+                <td>{{ item.date | date:'medium' }}</td>
+                <td>{{ item.tableNumber }}</td>
+                <td>{{ item.guestCount }}</td>
+                <td>
+                  <span class="status-chip" [class.pending]="item.statusId === 1" [class.confirmed]="item.statusId === 2" [class.canceled]="item.statusId === 3">{{ proxyService.getStatusLabel(item.statusId) }}</span>
+                </td>
+                <td>
+                  <div class="inline-actions">
+                    <button class="soft-action" type="button" (click)="updateStatus(item.id, 1)">Pending</button>
+                    <button class="secondary-action" type="button" (click)="updateStatus(item.id, 2)">Confirm</button>
+                    <button class="danger-action" type="button" (click)="updateStatus(item.id, 3)">Cancel</button>
+                    <button class="danger-action" type="button" (click)="deleteReservation(item.id)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8">{{ loading ? 'Loading reservations...' : 'No reservations available or admin access is required.' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+} @else {
+  <div class="empty-box">Admin login is required for reservation management tools.</div>
+}

@@ -33,7 +33,21 @@
     <p class="profile-page-message" [class.error]="messageType === 'error'" [class.success]="messageType === 'success'">{{ message }}</p>
   }
 
-  <section class="profile-page-content">
-    <app-user-profile></app-user-profile>
+  <section class="profile-page-content page-grid page-grid-two">
+    <div class="panel-card">
+      <div class="panel-head">
+        <span>Preview</span>
+        <h3>Current profile</h3>
+      </div>
+      <app-user-profile></app-user-profile>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-head">
+        <span>Update</span>
+        <h3>Edit data returned by backend</h3>
+      </div>
+      <app-profile-editor></app-profile-editor>
+    </div>
   </section>
 </div>

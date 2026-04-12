@@ -4,10 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { Observable, map } from 'rxjs';
 import { ProxyService } from '../../services/proxy.service';
 import { UserProfile } from '../components/user-profile/user-profile';
+import { ProfileEditor } from '../components/profile-editor/profile-editor';
 
 @Component({
   selector: 'app-profile-page',
-  imports: [RouterLink, UserProfile, AsyncPipe],
+  imports: [RouterLink, UserProfile, AsyncPipe, ProfileEditor],
   templateUrl: './profile.html',
   styleUrl: './profile.css'
 })
@@ -23,7 +24,7 @@ export class ProfilePage {
     private router: Router
   ) {
     this.profile$ = this.proxyService.watchProfile();
-    this.canDeleteProfile$ = this.proxyService.getUserRoles().pipe(
+    this.canDeleteProfile$ = this.proxyService.watchRoles().pipe(
       map((roles) => roles.some((role) => role.name === 'Customer'))
     );
   }

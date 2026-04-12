@@ -13,6 +13,7 @@ import { ProxyService } from '../../../services/proxy.service';
 export class ReservationList implements OnInit {
   data$!: Observable<any[]>;
   restaurants$!: Observable<any[]>;
+  restaurants: any[] = [];
 
   restaurantId = 1;
   date = '';
@@ -27,6 +28,7 @@ export class ReservationList implements OnInit {
   ngOnInit(): void {
     this.data$ = this.proxyService.watchMyReservations();
     this.restaurants$ = this.proxyService.getRestaurants();
+    this.restaurants$.subscribe((data) => this.restaurants = data);
     this.setDefaultDate();
   }
 
@@ -69,6 +71,25 @@ export class ReservationList implements OnInit {
         this.errorMessage = err?.error || 'Reservation could not be created.';
       }
     });
+  }
+
+  deleteReservation(id: number) {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.proxyService.deleteReservation(id).subscribe({
+      next: () => {
+        this.successMessage = 'Reservation deleted successfully.';
+        this.proxyService.refreshReservations();
+      },
+      error: (err) => {
+        this.errorMessage = err?.error || 'Reservation could not be deleted.';
+      }
+    });
+  }
+
+  getRestaurantName(id: number) {
+    return this.restaurants.find((item) => item.id === id)?.name || `Restaurant ${id}`;
   }
 
   cancelReservation(id: number) {

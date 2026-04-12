@@ -1,8 +1,8 @@
 <div class="page-shell">
   <section class="page-hero-card">
     <span class="page-label">Users</span>
-    <h1>User and customer information</h1>
-    <p>Admins can inspect customer data here, while signed-in users can still see their own profile section.</p>
+    <h1>User, customer and role information</h1>
+    <p>Admins can inspect users, customers and roles here, while signed-in users can still see their own profile section.</p>
   </section>
 
   <div class="page-grid page-grid-two">
@@ -20,6 +20,24 @@
         <h3>Current user profile</h3>
       </div>
       <app-user-profile></app-user-profile>
+    </section>
+  </div>
+
+  <div class="page-grid page-grid-two">
+    <section class="panel-card">
+      <div class="panel-head">
+        <span>Admin users</span>
+        <h3>Manage users and assigned roles</h3>
+      </div>
+      <app-admin-users-manager></app-admin-users-manager>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-head">
+        <span>Admin roles</span>
+        <h3>Manage role records</h3>
+      </div>
+      <app-admin-role-manager></app-admin-role-manager>
     </section>
   </div>
 </div>

@@ -1,0 +1,132 @@
+@if (isAdmin$ | async) {
+  <div class="stack">
+    @if (message) {
+      <div class="status-msg" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">{{ message }}</div>
+    }
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>User overview</h3>
+          <p class="subtle">Uses backend admin endpoints to load users, update accounts, delete users and manage assigned roles.</p>
+        </div>
+      </div>
+
+      <div class="dual-grid">
+        <article class="entity-card">
+          <h4>All users</h4>
+          <div class="entity-list">
+            @for (user of users; track user.id) {
+              <article class="entity-card">
+                <div class="entity-title">
+                  <div>
+                    <h4>{{ user.username }}</h4>
+                    <p class="subtle">#{{ user.id }} · {{ user.email }}</p>
+                  </div>
+                  <div class="actions-row">
+                    <button class="secondary-action" type="button" (click)="selectUser(user.id)">Manage</button>
+                    <button class="danger-action" type="button" (click)="deleteUser(user.id)">Delete</button>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty-box">No users returned yet.</div>
+            }
+          </div>
+        </article>
+
+        <article class="entity-card">
+          <h4>Customers only</h4>
+          <div class="entity-list">
+            @for (customer of customers; track customer.id) {
+              <article class="entity-card">
+                <div class="entity-title">
+                  <div>
+                    <h4>{{ customer.username }}</h4>
+                    <p class="subtle">Reservations: {{ customer.reservations?.length || 0 }}</p>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty-box">No customer data returned.</div>
+            }
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Selected user tools</h3>
+          <p class="subtle">Choose a user from the left to update their account or manage roles.</p>
+        </div>
+      </div>
+
+      @if (selectedUser) {
+        <div class="form-grid">
+          <div class="field">
+            <label>User ID</label>
+            <input [(ngModel)]="selectedUserId" name="selectedUserId" type="number" readonly />
+          </div>
+          <div class="field">
+            <label>Username</label>
+            <input [(ngModel)]="username" name="adminUsername" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input [(ngModel)]="email" name="adminEmail" />
+          </div>
+          <div class="field">
+            <label>New password</label>
+            <input [(ngModel)]="password" name="adminPassword" type="password" />
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="primary-action" type="button" (click)="updateUser()">Update user account</button>
+        </div>
+
+        <div class="dual-grid">
+          <div class="entity-card">
+            <h4>Current roles</h4>
+            <div class="badge-row">
+              @for (role of selectedUserRoles; track role.id) {
+                <span class="role-chip">{{ role.name }}</span>
+              } @empty {
+                <span class="subtle">No roles found for this user.</span>
+              }
+            </div>
+          </div>
+
+          <div class="entity-card">
+            <div class="field">
+              <label>Role to assign</label>
+              <select [(ngModel)]="roleIdToAssign" name="roleIdToAssign">
+                @for (role of roles; track role.id) {
+                  <option [value]="role.id">{{ role.name }} (#{{ role.id }})</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Role to remove</label>
+              <select [(ngModel)]="roleIdToRemove" name="roleIdToRemove">
+                @for (role of roles; track role.id) {
+                  <option [value]="role.id">{{ role.name }} (#{{ role.id }})</option>
+                }
+              </select>
+            </div>
+            <div class="actions-row">
+              <button class="secondary-action" type="button" (click)="assignRole()">Assign role</button>
+              <button class="danger-action" type="button" (click)="removeRole()">Remove role</button>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-box">Select a user to manage their account and roles.</div>
+      }
+    </section>
+  </div>
+} @else {
+  <div class="empty-box">Admin login is required for user management.</div>
+}

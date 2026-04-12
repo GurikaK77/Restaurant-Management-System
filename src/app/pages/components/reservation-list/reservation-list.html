@@ -54,7 +54,7 @@
             <div class="reservation-item-head">
               <div>
                 <strong>Reservation #{{ item.id }}</strong>
-                <p>Restaurant {{ item.restaurantId }}</p>
+                <p>{{ getRestaurantName(item.restaurantId) }}</p>
               </div>
 
               <span class="status-pill" [class.pending]="item.statusId === 1" [class.confirmed]="item.statusId === 2" [class.canceled]="item.statusId === 3">
@@ -68,13 +68,17 @@
               <li><strong>Guests:</strong> {{ item.guestCount }}</li>
             </ul>
 
-            <button
-              type="button"
-              class="cancel-btn"
-              [disabled]="item.statusId === 3"
-              (click)="cancelReservation(item.id)">
-              {{ item.statusId === 3 ? 'Already canceled' : 'Cancel reservation' }}
-            </button>
+            <div class="reservation-actions-row">
+              <button
+                type="button"
+                class="cancel-btn"
+                [disabled]="item.statusId === 3"
+                (click)="cancelReservation(item.id)">
+                {{ item.statusId === 3 ? 'Already canceled' : 'Cancel reservation' }}
+              </button>
+
+              <button type="button" class="delete-btn" (click)="deleteReservation(item.id)">Delete reservation</button>
+            </div>
           </article>
         }
       </div>

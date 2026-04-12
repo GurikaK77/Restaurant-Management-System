@@ -1,0 +1,78 @@
+@if (isAdmin$ | async) {
+  <div class="stack">
+    @if (message) {
+      <div class="status-msg" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">{{ message }}</div>
+    }
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Restaurant CRUD</h3>
+          <p class="subtle">Uses <code>Add</code>, <code>Update</code> and <code>Remove</code>.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Restaurant ID (for update)</label>
+          <input [(ngModel)]="id" name="id" type="number" />
+        </div>
+        <div class="field">
+          <label>Name</label>
+          <input [(ngModel)]="name" name="name" />
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input [(ngModel)]="location" name="location" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input [(ngModel)]="email" name="email" type="email" />
+        </div>
+        <div class="field full">
+          <label>Description</label>
+          <textarea [(ngModel)]="description" name="description"></textarea>
+        </div>
+        <div class="field">
+          <label>Total tables</label>
+          <input [(ngModel)]="totalTables" name="totalTables" type="number" />
+        </div>
+        <div class="field">
+          <label>Seats per table</label>
+          <input [(ngModel)]="seatsPerTable" name="seatsPerTable" type="number" />
+        </div>
+      </div>
+      <div class="actions-row">
+        <button class="primary-action" type="button" (click)="createRestaurant()">Create restaurant</button>
+        <button class="secondary-action" type="button" (click)="updateRestaurant()">Update selected</button>
+        <button class="soft-action" type="button" (click)="clearForm()">Clear form</button>
+      </div>
+    </section>
+
+    <section class="entity-card">
+      <div class="entity-list">
+        @for (restaurant of restaurants; track restaurant.id) {
+          <article class="entity-card">
+            <div class="entity-title">
+              <div>
+                <h4>{{ restaurant.name }}</h4>
+                <p class="subtle">#{{ restaurant.id }} · {{ restaurant.location }} · {{ restaurant.email }}</p>
+              </div>
+            </div>
+            <div class="badge-row">
+              <span class="meta-chip">Tables {{ restaurant.totalTables }}</span>
+              <span class="meta-chip">Seats/table {{ restaurant.seatsPerTable }}</span>
+            </div>
+            <p class="subtle">{{ restaurant.description }}</p>
+            <div class="actions-row">
+              <button class="secondary-action" type="button" (click)="fillForm(restaurant)">Use in form</button>
+              <button class="danger-action" type="button" (click)="deleteRestaurant(restaurant.id)">Delete</button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  </div>
+} @else {
+  <div class="empty-box">Admin login is required for restaurant CRUD tools.</div>
+}

@@ -2,14 +2,14 @@
   <section class="page-hero-card">
     <span class="page-label">Reservations</span>
     <h1>Manage reservations in one place</h1>
-    <p>Create new bookings, review your reservation list and cancel reservations from the same page.</p>
+    <p>Create new bookings, review your reservation list, cancel them, and use the admin reservation tools when your role allows it.</p>
   </section>
 
   <div class="page-grid page-grid-reservations">
     <section class="panel-card panel-card-large">
       <div class="panel-head">
         <span>Booking data</span>
-        <h3>Reservation List</h3>
+        <h3>My reservations</h3>
       </div>
       <app-reservation-list></app-reservation-list>
     </section>
@@ -22,4 +22,12 @@
       <app-reservation-status></app-reservation-status>
     </section>
   </div>
+
+  <section class="panel-card">
+    <div class="panel-head">
+      <span>Admin tools</span>
+      <h3>Reservation management</h3>
+    </div>
+    <app-admin-reservation-manager></app-admin-reservation-manager>
+  </section>
 </div>
