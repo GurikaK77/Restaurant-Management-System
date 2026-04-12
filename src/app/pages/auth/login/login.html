@@ -30,15 +30,15 @@
         <p>Log in to enter the restaurant reservation system</p>
       </div>
 
-      <form class="auth-form">
+      <form class="auth-form" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label for="username">Username</label>
-          <input id="username" type="text" placeholder="Enter your username" />
+          <input id="username" type="text" placeholder="Enter your username" name="username" [(ngModel)]="username" />
         </div>
 
         <div class="form-group">
           <label for="password">Password</label>
-          <input id="password" type="password" placeholder="Enter your password" />
+          <input id="password" type="password" placeholder="Enter your password" name="password" [(ngModel)]="password" />
         </div>
 
         <div class="form-options">
@@ -50,7 +50,17 @@
           <a href="#" class="forgot-link">Forgot password?</a>
         </div>
 
-        <button type="submit" class="auth-btn">Sign In</button>
+        @if (errorMessage) {
+          <p class="form-message error-message">{{ errorMessage }}</p>
+        }
+
+        @if (successMessage) {
+          <p class="form-message success-message">{{ successMessage }}</p>
+        }
+
+        <button type="submit" class="auth-btn" [disabled]="loading">
+          {{ loading ? 'Signing In...' : 'Sign In' }}
+        </button>
 
         <p class="switch-text">
           Don’t have an account?

@@ -1,0 +1,133 @@
+.profile-page {
+  width: min(1100px, calc(100% - 40px));
+  margin: 32px auto 56px;
+  display: grid;
+  gap: 22px;
+}
+
+.profile-page-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  padding: 24px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.86));
+  border: 1px solid rgba(245, 158, 11, 0.18);
+}
+
+.profile-page-hero span {
+  color: #fbbf24;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.profile-page-hero h1 {
+  margin: 8px 0;
+  color: #fff;
+}
+
+.profile-page-hero p {
+  margin: 0;
+  color: #d1d5db;
+  max-width: 700px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f59e0b, #fde68a);
+  color: #111827;
+  white-space: nowrap;
+}
+
+@media (max-width: 780px) {
+  .profile-page {
+    width: min(1100px, calc(100% - 24px));
+  }
+
+  .profile-page-hero {
+    flex-direction: column;
+    align-items: start;
+  }
+}
+
+
+.profile-actions-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  border-radius: 24px;
+  background: rgba(127, 29, 29, 0.18);
+  border: 1px solid rgba(248, 113, 113, 0.18);
+}
+
+.profile-actions-card h3 {
+  margin: 8px 0;
+  color: #fff;
+}
+
+.profile-actions-card p {
+  margin: 0;
+  color: #e5e7eb;
+  max-width: 760px;
+}
+
+.danger-label {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(248, 113, 113, 0.14);
+  color: #fda4af;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.delete-profile-btn {
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecaca;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.delete-profile-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.profile-page-message {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.profile-page-message.success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.profile-page-message.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+}
+
+@media (max-width: 780px) {
+  .profile-actions-card {
+    flex-direction: column;
+    align-items: start;
+  }
+}

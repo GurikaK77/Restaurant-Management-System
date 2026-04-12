@@ -1,1 +1,13 @@
-<p>customers works!</p>
+@if (data$ | async; as data) {
+  @if (data.length) {
+    <ul>
+      @for (item of data; track item.id) {
+        <li>{{ item.username }} · {{ item.email }} · {{ item.registrationDate | date:'mediumDate' }}</li>
+      }
+    </ul>
+  } @else {
+    <p>Admin login required</p>
+  }
+} @else {
+  <p>Loading customers...</p>
+}

@@ -1,1 +1,22 @@
-<p>dish-details works!</p>
+<div class="dish-switcher">
+  <button type="button" (click)="loadDish(5)">Dish 5</button>
+  <button type="button" (click)="loadDish(6)">Dish 6</button>
+  <button type="button" (click)="loadDish(9)">Dish 9</button>
+</div>
+
+@if (data$ | async; as dish) {
+  @if (dish) {
+    <div class="dish-detail-card">
+      <img class="dish-detail-image" [src]="proxyService.getImageUrl(dish.imageUrl)" [alt]="dish.name">
+      <div class="dish-detail-content">
+        <h4>{{ dish.name }}</h4>
+        <p>Price: {{ dish.price | number:'1.2-2' }} ₾</p>
+        <p>Available: {{ dish.isAvaiable ? 'Yes' : 'No' }}</p>
+      </div>
+    </div>
+  } @else {
+    <p class="dish-detail-empty">Login first to load dish details.</p>
+  }
+} @else {
+  <p class="dish-detail-empty">Loading...</p>
+}

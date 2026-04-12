@@ -1,1 +1,36 @@
-<p>restaurant-details works!</p>
+<div class="restaurant-switcher">
+  <button type="button" (click)="loadRestaurant(1)">Restaurant 1</button>
+  <button type="button" (click)="loadRestaurant(2)">Restaurant 2</button>
+  <button type="button" (click)="loadRestaurant(3)">Restaurant 3</button>
+</div>
+
+@if (data$ | async; as data) {
+  <div>
+    <h4>{{ data.restaurant.name }}</h4>
+    <p>{{ data.restaurant.location }}</p>
+    <p>{{ data.restaurant.description }}</p>
+    <p>Tables: {{ data.restaurant.totalTables }} · Seats per table: {{ data.restaurant.seatsPerTable }}</p>
+
+    @if (data.menus.length) {
+      <h5>Menus</h5>
+      <ul>
+        @for (menu of data.menus; track menu.id) {
+          <li>{{ menu.name }}</li>
+        }
+      </ul>
+    } @else {
+      <p>Login first to view menus and dishes</p>
+    }
+
+    @if (data.dishes.length) {
+      <h5>Dishes</h5>
+      <ul>
+        @for (dish of data.dishes; track dish.id) {
+          <li>{{ dish.name }} - {{ dish.price | number:'1.2-2' }} ₾</li>
+        }
+      </ul>
+    }
+  </div>
+} @else {
+  <p>Loading restaurant...</p>
+}

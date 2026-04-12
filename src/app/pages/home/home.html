@@ -1,28 +1,28 @@
 <div class="home-page">
-  <section class="hero-section" id="overview">
+  <section class="hero-section">
     <div class="hero-left">
       <span class="page-badge">Restaurant Reservation System</span>
 
       <h1>Smart control for reservations, menus and customer data</h1>
 
       <p class="hero-description">
-        A cleaner restaurant dashboard where reservations, menus, users and restaurant
-        details are grouped into readable sections instead of one long mixed page.
+        The dashboard is now split into clear pages, so reservations, menus, users and
+        restaurant details each have their own space instead of one long mixed screen.
       </p>
 
       <div class="hero-actions">
-        <a routerLink="/main" fragment="reservations" class="primary-btn">View Reservations</a>
-        <a routerLink="/main" fragment="menus" class="secondary-btn">Explore Menus</a>
+        <a routerLink="/reservations" class="primary-btn">Open Reservations</a>
+        <a routerLink="/menus" class="secondary-btn">Browse Menus</a>
       </div>
 
       <div class="hero-mini-stats">
         <div class="mini-stat">
-          <span>Users</span>
-          <strong>Registration + Login</strong>
+          <span>Navigation</span>
+          <strong>Separate pages</strong>
         </div>
         <div class="mini-stat">
           <span>Flow</span>
-          <strong>Profile to booking</strong>
+          <strong>Login to booking</strong>
         </div>
       </div>
     </div>
@@ -30,10 +30,10 @@
     <div class="hero-right">
       <div class="preview-card">
         <div class="preview-header">
-          <h3>Dashboard Preview</h3>
+          <h3>Overview Preview</h3>
           <span>Live summary block</span>
         </div>
- 
+
         <div class="preview-placeholder">
           <app-summary-info></app-summary-info>
         </div>
@@ -83,131 +83,6 @@
     </div>
   </section>
 
-  <section class="content-section" id="reservations">
-    <div class="section-header">
-      <span>Reservations</span>
-      <h2>Reservation management space</h2>
-      <p>Keep booking lists and booking status in one connected section for easier reading.</p>
-    </div>
-
-    <div class="feature-layout">
-      <article class="content-card large-card">
-        <div class="card-topline">Reservation data</div>
-        <h3>Reservation List</h3>
-        <div class="card-placeholder tall-placeholder">
-          <app-reservation-list></app-reservation-list>
-        </div>
-      </article>
-
-      <div class="side-stack">
-        <article class="content-card">
-          <div class="card-topline">Status overview</div>
-          <h3>Reservation Status</h3>
-          <div class="card-placeholder">
-            <app-reservation-status></app-reservation-status>
-          </div>
-        </article>
-
-        <article class="content-card info-banner-card">
-          <div class="info-banner">
-            <span>Booking flow</span>
-            <h3>Users register first, then continue to reservations.</h3>
-            <p>
-              The layout now separates authentication from reservation management so the
-              dashboard feels more structured.
-            </p>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="content-section" id="menus">
-    <div class="section-header">
-      <span>Menus</span>
-      <h2>Menu and dish sections</h2>
-      <p>Menu cards are grouped together so dish content is no longer mixed with user and restaurant blocks.</p>
-    </div>
-
-    <div class="three-column-grid">
-      <article class="content-card">
-        <div class="card-topline">Menu collection</div>
-        <h3>All Menus</h3>
-        <div class="card-placeholder">
-          <app-all-menu></app-all-menu>
-        </div>
-      </article>
-
-      <article class="content-card">
-        <div class="card-topline">Dish availability</div>
-        <h3>Available Dishes</h3>
-        <div class="card-placeholder">
-          <app-available-dishes></app-available-dishes>
-        </div>
-      </article>
-
-      <article class="content-card">
-        <div class="card-topline">Detailed item</div>
-        <h3>Dish Details</h3>
-        <div class="card-placeholder">
-          <app-dish-details></app-dish-details>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="content-section" id="users">
-    <div class="section-header">
-      <span>Users</span>
-      <h2>Customer and profile area</h2>
-      <p>User registration, login and customer information now sit inside their own dedicated section.</p>
-    </div>
-
-    <div class="two-column-grid">
-      <article class="content-card">
-        <div class="card-topline">Customer records</div>
-        <h3>Customers</h3>
-        <div class="card-placeholder">
-          <app-customers></app-customers>
-        </div>
-      </article>
-
-      <article class="content-card">
-        <div class="card-topline">Account details</div>
-        <h3>User Profile</h3>
-        <div class="card-placeholder">
-          <app-user-profile></app-user-profile>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="content-section" id="restaurant">
-    <div class="section-header">
-      <span>Restaurant</span>
-      <h2>Restaurant information and seating</h2>
-      <p>Core restaurant details and capacity information are grouped together at the end of the main page.</p>
-    </div>
-
-    <div class="two-column-grid">
-      <article class="content-card">
-        <div class="card-topline">Restaurant profile</div>
-        <h3>Restaurant Details</h3>
-        <div class="card-placeholder">
-          <app-restaurant-details></app-restaurant-details>
-        </div>
-      </article>
-
-      <article class="content-card">
-        <div class="card-topline">Capacity</div>
-        <h3>Capacity Seats</h3>
-        <div class="card-placeholder">
-          <app-capacity-seats></app-capacity-seats>
-        </div>
-      </article>
-    </div>
-  </section>
-
   <section class="content-section" id="roles">
     <div class="section-header">
       <span>Access</span>
@@ -243,5 +118,4 @@
       </article>
     </div>
   </section>
-
 </div>

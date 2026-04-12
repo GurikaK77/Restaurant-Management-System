@@ -1,0 +1,9 @@
+1. Run the backend Swagger/API first on https://localhost:7067
+2. In the Angular project run:
+   npm install
+   npm start
+3. Open http://localhost:4200
+4. The app is now split into pages: Overview, Reservations, Menus, Users, Restaurant, Profile
+5. proxy.conf.json forwards both /api and /uploads to the backend so menu and dish images can load
+6. Customer users can delete their own profile from the Profile page through DELETE /api/User/DeleteProfile
+7. Admin-only data such as all customers still needs an admin token/role

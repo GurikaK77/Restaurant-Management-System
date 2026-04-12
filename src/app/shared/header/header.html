@@ -9,17 +9,30 @@
     </a>
 
     <nav class="nav">
-      <a routerLink="/main" fragment="overview" routerLinkActive="active-link">Overview</a>
-      <a routerLink="/main" fragment="reservations" routerLinkActive="active-link">Reservations</a>
-      <a routerLink="/main" fragment="menus" routerLinkActive="active-link">Menus</a>
-      <a routerLink="/main" fragment="users" routerLinkActive="active-link">Users</a>
-      <a routerLink="/main" fragment="restaurant" routerLinkActive="active-link">Restaurant</a>
-      <a routerLink="/main" fragment="roles" routerLinkActive="active-link">Roles</a>
+      <a routerLink="/main" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Overview</a>
+      <a routerLink="/reservations" routerLinkActive="active-link">Reservations</a>
+      <a routerLink="/menus" routerLinkActive="active-link">Menus</a>
+      <a routerLink="/users" routerLinkActive="active-link">Users</a>
+      <a routerLink="/restaurant" routerLinkActive="active-link">Restaurant</a>
+      @if (isLoggedIn$ | async) {
+        <a routerLink="/profile" routerLinkActive="active-link">Profile</a>
+      }
     </nav>
 
     <div class="actions">
-      <a routerLink="/login" class="login-btn">Login</a>
-      <a routerLink="/register" class="start-btn">Sign Up</a>
+      @if (isLoggedIn$ | async) {
+        @if (profile$ | async; as profile) {
+          <a routerLink="/profile" class="profile-chip">
+            <img [src]="proxyService.getProfileAvatar(profile)" [alt]="proxyService.getDisplayName(profile)">
+            <span>{{ profile.user?.username || 'Profile' }}</span>
+          </a>
+        }
+
+        <button type="button" class="logout-btn" (click)="logout()">Logout</button>
+      } @else {
+        <a routerLink="/login" class="login-btn">Login</a>
+        <a routerLink="/register" class="start-btn">Sign Up</a>
+      }
     </div>
   </div>
 </header>

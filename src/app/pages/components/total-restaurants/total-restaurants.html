@@ -1,1 +1,5 @@
-<p>total-restaurants works!</p>
+@if (data$ | async; as data) {
+  <p>{{ data }}</p>
+} @else {
+  <p>Loading...</p>
+}

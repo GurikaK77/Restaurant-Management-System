@@ -1,1 +1,87 @@
-<p>reservation-list works!</p>
+<div class="reservation-shell">
+  <div class="reservation-create-card">
+    <div class="reservation-create-head">
+      <h4>Make a reservation</h4>
+      <p>Choose restaurant, date, table and guest count.</p>
+    </div>
+
+    @if (restaurants$ | async; as restaurants) {
+      <div class="reservation-form-grid">
+        <label>
+          <span>Restaurant</span>
+          <select [(ngModel)]="restaurantId" name="restaurantId">
+            @for (restaurant of restaurants; track restaurant.id) {
+              <option [ngValue]="restaurant.id">{{ restaurant.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Date & time</span>
+          <input type="datetime-local" [(ngModel)]="date" name="date">
+        </label>
+
+        <label>
+          <span>Table number</span>
+          <input type="number" min="1" [(ngModel)]="tableNumber" name="tableNumber">
+        </label>
+
+        <label>
+          <span>Guest count</span>
+          <input type="number" min="1" [(ngModel)]="guestCount" name="guestCount">
+        </label>
+      </div>
+
+      <button class="reserve-btn" type="button" (click)="createReservation()" [disabled]="submitting">
+        {{ submitting ? 'Saving...' : 'Reserve now' }}
+      </button>
+    }
+
+    @if (errorMessage) {
+      <p class="reservation-message error">{{ errorMessage }}</p>
+    }
+
+    @if (successMessage) {
+      <p class="reservation-message success">{{ successMessage }}</p>
+    }
+  </div>
+
+  @if (data$ | async; as data) {
+    @if (data.length) {
+      <div class="reservation-list-grid">
+        @for (item of data; track item.id) {
+          <article class="reservation-item">
+            <div class="reservation-item-head">
+              <div>
+                <strong>Reservation #{{ item.id }}</strong>
+                <p>Restaurant {{ item.restaurantId }}</p>
+              </div>
+
+              <span class="status-pill" [class.pending]="item.statusId === 1" [class.confirmed]="item.statusId === 2" [class.canceled]="item.statusId === 3">
+                {{ getStatusLabel(item.statusId) }}
+              </span>
+            </div>
+
+            <ul>
+              <li><strong>Date:</strong> {{ item.date | date:'medium' }}</li>
+              <li><strong>Table:</strong> {{ item.tableNumber }}</li>
+              <li><strong>Guests:</strong> {{ item.guestCount }}</li>
+            </ul>
+
+            <button
+              type="button"
+              class="cancel-btn"
+              [disabled]="item.statusId === 3"
+              (click)="cancelReservation(item.id)">
+              {{ item.statusId === 3 ? 'Already canceled' : 'Cancel reservation' }}
+            </button>
+          </article>
+        }
+      </div>
+    } @else {
+      <p class="empty-text">No reservations yet. Create your first booking from the form above.</p>
+    }
+  } @else {
+    <p class="empty-text">Loading reservations...</p>
+  }
+</div>

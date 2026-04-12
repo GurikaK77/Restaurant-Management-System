@@ -1,1 +1,28 @@
-<p>available-dishes works!</p>
+@if (data$ | async; as data) {
+  @if (data.length) {
+    <div class="dish-groups">
+      @for (restaurantCard of data; track restaurantCard.restaurant.id) {
+        <section class="dish-group">
+          <h4>{{ restaurantCard.restaurant.name }}</h4>
+          <div class="dish-list">
+            @for (dish of restaurantCard.dishes; track dish.id) {
+              @if (dish.isAvaiable) {
+                <article class="dish-card">
+                  <img class="dish-image" [src]="proxyService.getImageUrl(dish.imageUrl)" [alt]="dish.name">
+                  <div>
+                    <strong>{{ dish.name }}</strong>
+                    <p>{{ dish.price | number:'1.2-2' }} ₾</p>
+                  </div>
+                </article>
+              }
+            }
+          </div>
+        </section>
+      }
+    </div>
+  } @else {
+    <p class="dish-empty">Login first to load dishes.</p>
+  }
+} @else {
+  <p class="dish-empty">Loading dishes...</p>
+}

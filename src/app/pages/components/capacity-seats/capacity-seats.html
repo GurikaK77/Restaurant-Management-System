@@ -1,1 +1,9 @@
-<p>capacity-seats works!</p>
+@if (data$ | async; as data) {
+  <ul>
+    @for (item of data; track item.id) {
+      <li>{{ item.name }} · {{ item.totalTables }} tables · {{ item.capacity }} seats</li>
+    }
+  </ul>
+} @else {
+  <p>Loading capacity...</p>
+}

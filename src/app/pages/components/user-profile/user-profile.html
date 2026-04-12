@@ -1,1 +1,60 @@
-<p>user-profile works!</p>
+@if (data$ | async; as data) {
+  @if (data) {
+    <div class="profile-shell">
+      <div class="profile-hero">
+        <div class="profile-avatar-wrap">
+          <img class="profile-avatar" [src]="proxyService.getProfileAvatar(data)" [alt]="proxyService.getDisplayName(data)">
+          <label class="avatar-upload">
+            <input type="file" accept="image/*" (change)="onImageChange($event, data)">
+            Change photo
+          </label>
+        </div>
+
+        <div class="profile-main-info">
+          <span class="profile-badge">Customer Profile</span>
+          <h2>{{ proxyService.getDisplayName(data) }}</h2>
+          <p class="profile-email">{{ data.user.email }}</p>
+          <p class="profile-username">@{{ data.user.username }}</p>
+        </div>
+      </div>
+
+      <div class="profile-grid">
+        <article class="profile-card">
+          <span>Account</span>
+          <h3>Basic information</h3>
+          <ul>
+            <li><strong>Username:</strong> {{ data.user.username }}</li>
+            <li><strong>Email:</strong> {{ data.user.email }}</li>
+            <li><strong>Registered:</strong> {{ data.user.registrationDate | date:'mediumDate' }}</li>
+          </ul>
+        </article>
+
+        <article class="profile-card">
+          <span>Personal</span>
+          <h3>Contact details</h3>
+          <ul>
+            <li><strong>First name:</strong> {{ data.person.firstName }}</li>
+            <li><strong>Last name:</strong> {{ data.person.lastName }}</li>
+            <li><strong>Phone:</strong> {{ data.person.phone }}</li>
+            <li><strong>Address:</strong> {{ data.person.address }}</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="profile-note">
+        <p>
+          Photo upload here is currently stored in the browser so it appears in the header and profile page immediately.
+          For a real backend profile image, add an image field to User or Person and create an upload endpoint.
+        </p>
+      </div>
+    </div>
+  } @else {
+    <div class="profile-empty">
+      <p>Login first to load profile details.</p>
+    </div>
+  }
+} @else {
+  <div class="profile-empty">
+    <p>Loading profile...</p>
+  </div>
+}

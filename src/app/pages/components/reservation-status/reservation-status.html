@@ -1,1 +1,13 @@
-<p>reservation-status works!</p>
+@if (data$ | async; as data) {
+  @if (data.length) {
+    <ul>
+      @for (item of data; track item.label) {
+        <li>{{ item.label }}: {{ item.count }}</li>
+      }
+    </ul>
+  } @else {
+    <p>Login first to see reservation status</p>
+  }
+} @else {
+  <p>Loading status...</p>
+}

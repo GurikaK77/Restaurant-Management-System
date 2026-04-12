@@ -1,1 +1,19 @@
-<p>all-menu works!</p>
+@if (data$ | async; as data) {
+  @if (data.length) {
+    <div class="menu-list">
+      @for (item of data; track item.id) {
+        <article class="menu-card">
+          <img class="menu-image" [src]="proxyService.getImageUrl(item.imageUrl)" [alt]="item.name">
+          <div class="menu-content">
+            <h4>{{ item.name }}</h4>
+            <p>{{ item.restaurantName }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    <p class="menu-empty">Login first to load menus.</p>
+  }
+} @else {
+  <p class="menu-empty">Loading menus...</p>
+}

@@ -1,0 +1,39 @@
+<div class="profile-page">
+  <section class="profile-page-hero">
+    <div>
+      <span>Account center</span>
+      <h1>Your profile details</h1>
+      <p>See your account information, contact details and use account actions from one clean profile page.</p>
+    </div>
+
+    <a routerLink="/main" class="back-btn">Back to overview</a>
+  </section>
+
+  @if (profile$ | async; as profile) {
+    @if (profile) {
+      @if (canDeleteProfile$ | async) {
+        <section class="profile-actions-card">
+          <div>
+            <span class="danger-label">Danger zone</span>
+            <h3>Delete profile</h3>
+            <p>
+              The backend supports <code>DELETE /api/User/DeleteProfile</code> for signed-in customers, so you can remove your own account from here.
+            </p>
+          </div>
+
+          <button type="button" class="delete-profile-btn" [disabled]="deleting" (click)="deleteProfile()">
+            {{ deleting ? 'Deleting...' : 'Delete my profile' }}
+          </button>
+        </section>
+      }
+    }
+  }
+
+  @if (message) {
+    <p class="profile-page-message" [class.error]="messageType === 'error'" [class.success]="messageType === 'success'">{{ message }}</p>
+  }
+
+  <section class="profile-page-content">
+    <app-user-profile></app-user-profile>
+  </section>
+</div>

@@ -1,1 +1,9 @@
-<p>today-reservations works!</p>
+@if (data$ | async; as data) {
+  @if (data !== null) {
+    <p>{{ data }}</p>
+  } @else {
+    <p>Login first</p>
+  }
+} @else {
+  <p>Loading...</p>
+}

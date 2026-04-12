@@ -1,0 +1,44 @@
+.dish-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.dish-group h4 {
+  margin: 0 0 12px;
+  color: #f8fafc;
+}
+
+.dish-list {
+  display: grid;
+  gap: 12px;
+}
+
+.dish-card {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.dish-image {
+  width: 76px;
+  height: 76px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.dish-card strong {
+  display: block;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.dish-card p,
+.dish-empty {
+  margin: 0;
+  color: #cbd5e1;
+}

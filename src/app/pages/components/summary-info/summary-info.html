@@ -1,1 +1,9 @@
-<p>summary-info works!</p>
+@if (data$ | async; as data) {
+  <div>
+    <p>Restaurants: {{ data.totalRestaurants }}</p>
+    <p>Menus: {{ data.totalMenus ?? 'Login first' }}</p>
+    <p>My Reservations: {{ data.loggedIn ? data.myReservations : 'Login first' }}</p>
+  </div>
+} @else {
+  <p>Loading summary...</p>
+}
