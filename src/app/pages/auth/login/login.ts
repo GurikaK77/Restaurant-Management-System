@@ -19,15 +19,41 @@ export class Login {
   constructor(
     private proxyService: ProxyService,
     private router: Router
-  ) {}
+  ) {
+    const navigationState = history.state as { registeredUsername?: string; registeredPassword?: string };
+
+    if (navigationState?.registeredUsername) {
+      this.username = navigationState.registeredUsername;
+    }
+
+    if (navigationState?.registeredPassword) {
+      this.password = navigationState.registeredPassword;
+      this.successMessage = 'Registration succeeded. You can sign in now.';
+    }
+  }
 
   onSubmit() {
+    if (this.loading) {
+      return;
+    }
+
     this.errorMessage = '';
+
+    if (!this.username.trim()) {
+      this.errorMessage = 'Username is required';
+      return;
+    }
+
+    if (!this.password) {
+      this.errorMessage = 'Password is required';
+      return;
+    }
+
     this.successMessage = '';
     this.loading = true;
 
     this.proxyService.login({
-      username: this.username,
+      username: this.username.trim(),
       password: this.password
     }).subscribe({
       next: (result: any) => {
@@ -40,11 +66,11 @@ export class Login {
           return;
         }
 
-        this.errorMessage = 'Login failed';
+        this.errorMessage = result?.message || 'Login failed';
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err?.error || 'Login failed';
+        this.errorMessage = this.proxyService.extractErrorMessage(err, 'Login failed');
       }
     });
   }

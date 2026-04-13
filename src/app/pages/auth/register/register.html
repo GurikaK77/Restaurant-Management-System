@@ -34,43 +34,43 @@
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">First Name</label>
-            <input id="firstName" type="text" placeholder="Enter your first name" name="firstName" [(ngModel)]="firstName" />
+            <input id="firstName" type="text" placeholder="Enter your first name" name="firstName" [(ngModel)]="firstName" [disabled]="loading" />
           </div>
           <div class="form-group">
             <label for="lastName">Last Name</label>
-            <input id="lastName" type="text" placeholder="Enter your last name" name="lastName" [(ngModel)]="lastName" />
+            <input id="lastName" type="text" placeholder="Enter your last name" name="lastName" [(ngModel)]="lastName" [disabled]="loading" />
           </div>
         </div>
 
         <div class="form-group">
           <label for="username">Username</label>
-          <input id="username" type="text" placeholder="Choose a username" name="username" [(ngModel)]="username" />
+          <input id="username" type="text" placeholder="Choose a username" name="username" [(ngModel)]="username" [disabled]="loading" />
         </div>
 
         <div class="form-group">
           <label for="email">Email Address</label>
-          <input id="email" type="email" placeholder="Enter your email address" name="email" [(ngModel)]="email" />
+          <input id="email" type="email" placeholder="Enter your email address" name="email" [(ngModel)]="email" [disabled]="loading" />
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="phone">Phone Number</label>
-            <input id="phone" type="text" placeholder="Enter your phone number" name="phone" [(ngModel)]="phone" />
+            <input id="phone" type="text" placeholder="Enter your phone number" name="phone" [(ngModel)]="phone" [disabled]="loading" />
           </div>
           <div class="form-group">
             <label for="address">Address</label>
-            <input id="address" type="text" placeholder="Enter your address" name="address" [(ngModel)]="address" />
+            <input id="address" type="text" placeholder="Enter your address" name="address" [(ngModel)]="address" [disabled]="loading" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="password">Password</label>
-            <input id="password" type="password" placeholder="Create a password" name="password" [(ngModel)]="password" />
+            <input id="password" type="password" placeholder="Create a password" name="password" [(ngModel)]="password" [disabled]="loading" />
           </div>
           <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
-            <input id="confirmPassword" type="password" placeholder="Repeat your password" name="confirmPassword" [(ngModel)]="confirmPassword" />
+            <input id="confirmPassword" type="password" placeholder="Repeat your password" name="confirmPassword" [(ngModel)]="confirmPassword" [disabled]="loading" />
           </div>
         </div>
 

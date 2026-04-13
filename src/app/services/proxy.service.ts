@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
@@ -85,6 +85,76 @@ export class ProxyService {
 
   refreshRoles() {
     this.rolesRefreshSubject.next(Date.now());
+  }
+
+  extractErrorMessage(error: unknown, fallback = 'Request failed'): string {
+    if (error instanceof HttpErrorResponse) {
+      const payload = error.error;
+
+      if (typeof payload === 'string' && payload.trim()) {
+        return payload;
+      }
+
+      if (payload && typeof payload === 'object') {
+        const maybeMessage = (payload as { message?: unknown }).message;
+        if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+          return maybeMessage;
+        }
+
+        const maybeTitle = (payload as { title?: unknown }).title;
+        if (typeof maybeTitle === 'string' && maybeTitle.trim()) {
+          return maybeTitle;
+        }
+
+        const maybeErrors = (payload as { errors?: Record<string, string[]> }).errors;
+        if (maybeErrors && typeof maybeErrors === 'object') {
+          const firstError = Object.values(maybeErrors).flat()[0];
+          if (firstError) {
+            return firstError;
+          }
+        }
+      }
+
+      if (typeof error.message === 'string' && error.message.trim()) {
+        return error.message;
+      }
+    }
+
+    if (typeof error === 'string' && error.trim()) {
+      return error;
+    }
+
+    if (error && typeof error === 'object') {
+      const maybeMessage = (error as { message?: unknown }).message;
+      if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+        return maybeMessage;
+      }
+    }
+
+    return fallback;
+  }
+
+  normalizeRegisterPayload(body: {
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    phone: string;
+    address: string;
+    password: string;
+  }) {
+    return {
+      person: {
+        firstName: body.firstName.trim(),
+        lastName: body.lastName.trim(),
+        phone: body.phone.trim(),
+        address: body.address.trim(),
+      },
+      username: body.username.trim(),
+      email: body.email.trim().toLowerCase(),
+      password: body.password,
+      registrationDate: new Date().toISOString(),
+    };
   }
 
   private getAuthOptions() {
@@ -420,36 +490,27 @@ export class ProxyService {
     );
   }
 
-  getTotalMenus(): Observable<number | null> {
-    if (!this.isLoggedIn()) {
-      return of(null);
-    }
-
+  getTotalMenus(): Observable<number> {
     return this.getMenus().pipe(
       map((result) => result.length)
     );
   }
 
-  getTotalCustomers(): Observable<number | null> {
-    if (!this.isLoggedIn()) {
-      return of(null);
-    }
-
-    return combineLatest([this.getCustomers(), this.watchIsAdmin()]).pipe(
-      map(([customers, isAdmin]) => isAdmin ? customers.length : null),
-      catchError(() => of(null))
+  getTotalCustomers(): Observable<number> {
+    return this.getCustomers().pipe(
+      map((result) => result.length)
     );
   }
 
-  getTodayReservationsCount(): Observable<number | null> {
-    if (!this.isLoggedIn()) {
-      return of(null);
-    }
+  getTodayReservationsCount(): Observable<number> {
+    const today = new Date().toISOString().split('T')[0];
 
-    const today = new Date().toISOString().slice(0, 10);
-
-    return this.watchMyReservations().pipe(
-      map((reservations) => reservations.filter((item) => String(item.date).slice(0, 10) === today).length)
+    return this.getAllReservations().pipe(
+      map((reservations) =>
+        reservations.filter((reservation) =>
+          String(reservation.date).startsWith(today)
+        ).length
+      )
     );
   }
 
@@ -460,18 +521,18 @@ export class ProxyService {
   }
 
   getMenusWithRestaurantNames(): Observable<any[]> {
-    return combineLatest([this.getRestaurants(), this.getMenus()]).pipe(
-      map(([restaurants, menus]) =>
-        menus.map((menu: any) => ({
+    return forkJoin({
+      restaurants: this.getRestaurants(),
+      menus: this.getMenus()
+    }).pipe(
+      map((result) =>
+        result.menus.map((menu: any) => ({
           ...menu,
-          restaurantName: restaurants.find((restaurant: any) => restaurant.id === menu.restaurantId)?.name || 'Unknown restaurant'
+          restaurantName:
+            result.restaurants.find((restaurant: any) => restaurant.id === menu.restaurantId)?.name || 'Unknown restaurant'
         }))
       )
     );
-  }
-
-  getAvailableRestaurantCards(ids: number[]): Observable<any[]> {
-    return forkJoin(ids.map((id) => this.getRestaurantCard(id)));
   }
 
   getRestaurantCard(restaurantId: number): Observable<any> {
@@ -481,176 +542,241 @@ export class ProxyService {
       restaurant: this.getRestaurantById(restaurantId),
       menus: this.getMenusByRestaurantId(restaurantId),
       dishes: dishIds.length
-        ? forkJoin(dishIds.map((id) => this.getDishById(id))).pipe(
-            map((dishes) => dishes.filter((dish) => !!dish))
-          )
+        ? forkJoin(dishIds.map((id) => this.getDishById(id)))
         : of([])
     });
   }
 
-  getDishGroup(ids: number[]): Observable<any[]> {
-    if (!this.isLoggedIn()) {
-      return of([]);
-    }
-
-    return forkJoin(ids.map((id) => this.getDishById(id))).pipe(
-      map((items) => items.filter((item) => !!item))
-    );
+  getRestaurantCardsByIds(ids: number[]): Observable<any[]> {
+    return forkJoin(ids.map((id) => this.getRestaurantCard(id)));
   }
 
   getSummaryInfo(): Observable<any> {
     return combineLatest([
       this.getRestaurants(),
-      this.getTotalMenus(),
+      this.getMenus(),
       this.watchMyReservations(),
+      this.watchProfile(),
       this.watchRoles()
     ]).pipe(
-      map(([restaurants, totalMenus, myReservations, roles]) => ({
+      map(([restaurants, menus, myReservations, profile, roles]) => ({
         totalRestaurants: restaurants.length,
-        totalMenus,
+        totalMenus: menus.length,
         myReservations: myReservations.length,
-        loggedIn: this.isLoggedIn(),
-        roles
+        displayName: this.getDisplayName(profile),
+        username: profile?.user?.username || 'Guest',
+        isAdmin: roles.some((role) => String(role.name).toLowerCase() === 'admin')
       }))
     );
   }
 
-  getCapacityData(): Observable<any[]> {
+  getRestaurantTableSummary(): Observable<any[]> {
     return this.getRestaurants().pipe(
-      map((restaurants) => restaurants.map((restaurant) => ({
-        ...restaurant,
-        capacity: restaurant.totalTables * restaurant.seatsPerTable
-      })))
+      map((restaurants) =>
+        restaurants.map((restaurant) => ({
+          id: restaurant.id,
+          name: restaurant.name,
+          totalTables: restaurant.totalTables,
+          seatsPerTable: restaurant.seatsPerTable,
+          totalCapacity: Number(restaurant.totalTables || 0) * Number(restaurant.seatsPerTable || 0)
+        }))
+      )
     );
   }
 
-  getReservationStatusSummary(): Observable<any[]> {
-    return this.watchMyReservations().pipe(
-      map((reservations) => {
-        const source = [
-          { label: 'Pending', statusId: 1 },
-          { label: 'Confirmed', statusId: 2 },
-          { label: 'Canceled', statusId: 3 }
-        ];
-
-        return source.map((item) => ({
-          label: item.label,
-          count: reservations.filter((reservation) => reservation.statusId === item.statusId).length
-        }));
-      })
+  getUsersWithRoles(): Observable<any[]> {
+    return combineLatest([this.getAllUsers(), this.getAllRoles()]).pipe(
+      map(([users]) => users)
     );
   }
 
-  getRestaurantDetailWithMenusAndDishes(restaurantId: number): Observable<any> {
-    return this.getRestaurantCard(restaurantId);
-  }
-
-  getRestaurantCardsForShowcase(): Observable<any[]> {
-    return this.getAvailableRestaurantCards([2, 3]);
-  }
-
-  getDishDetailsDefault(): Observable<any | null> {
-    return this.getDishById(5);
-  }
-
-  getStatusLabel(statusId: number): string {
-    if (statusId === 1) return 'Pending';
-    if (statusId === 2) return 'Confirmed';
-    if (statusId === 3) return 'Canceled';
-    return 'Unknown';
-  }
-
-  getDisplayName(profile: any): string {
-    if (!profile) {
-      return 'Guest User';
-    }
-
-    const fullName = `${profile.person?.firstName || ''} ${profile.person?.lastName || ''}`.trim();
-    return fullName || profile.user?.username || 'Guest User';
-  }
-
-  getProfileStorageKey(profile: any): string {
-    return `profile_image_${profile?.user?.id || 'guest'}`;
-  }
-
-  saveProfileImage(profile: any, imageDataUrl: string) {
-    localStorage.setItem(this.getProfileStorageKey(profile), imageDataUrl);
-    this.refreshProfile();
-  }
-
-  getSavedProfileImage(profile: any): string | null {
-    return localStorage.getItem(this.getProfileStorageKey(profile));
-  }
-
-  getInitials(profile: any): string {
-    const name = this.getDisplayName(profile);
-    const parts = name.split(' ').filter(Boolean).slice(0, 2);
-
-    if (!parts.length) {
-      return 'GU';
-    }
-
-    return parts.map((item) => item[0]?.toUpperCase() || '').join('');
-  }
-
-  getGeneratedAvatar(profile: any): string {
-    const initials = this.getInitials(profile);
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-        <defs>
-          <linearGradient id="avatarGradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#f59e0b" />
-            <stop offset="100%" stop-color="#f97316" />
-          </linearGradient>
-        </defs>
-        <rect width="120" height="120" rx="28" fill="url(#avatarGradient)" />
-        <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="42" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${initials}</text>
-      </svg>
-    `;
-
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-  }
-
-  getProfileAvatar(profile: any): string {
-    const savedImage = this.getSavedProfileImage(profile);
-    return savedImage || this.getGeneratedAvatar(profile);
+  getCustomerSummaries(): Observable<any[]> {
+    return combineLatest([this.getCustomers(), this.watchIsAdmin()]).pipe(
+      map(([customers]) => customers)
+    );
   }
 
   getImageUrl(imageUrl?: string | null): string {
     if (!imageUrl) {
-      return this.getGeneratedFoodPlaceholder();
+      return 'assets/no-image.png';
     }
 
     if (imageUrl.startsWith('http')) {
       return imageUrl;
     }
 
-    if (imageUrl.startsWith('/uploads')) {
-      return imageUrl;
-    }
-
-    return `${this.uploadsUrl}/${imageUrl.replace(/^\/+/, '')}`;
+    return `${imageUrl}`;
   }
 
-  private getGeneratedFoodPlaceholder(): string {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220">
-        <defs>
-          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#f59e0b" />
-            <stop offset="100%" stop-color="#fb7185" />
-          </linearGradient>
-        </defs>
-        <rect width="320" height="220" rx="28" fill="#111827" />
-        <rect x="14" y="14" width="292" height="192" rx="22" fill="url(#g)" opacity="0.16" />
-        <circle cx="160" cy="108" r="52" fill="none" stroke="#fde68a" stroke-width="12" />
-        <path d="M124 96c18-30 54-30 72 0" fill="none" stroke="#fde68a" stroke-width="10" stroke-linecap="round" />
-        <circle cx="140" cy="116" r="7" fill="#fde68a" />
-        <circle cx="180" cy="116" r="7" fill="#fde68a" />
-        <text x="50%" y="182" dominant-baseline="middle" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#f8fafc">Menu image</text>
-      </svg>
-    `;
 
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+
+  getRestaurantDetailWithMenusAndDishes(id: number): Observable<any> {
+    return this.getRestaurantCard(id).pipe(
+      map((data) => ({
+        ...data,
+        dishes: Array.isArray(data?.dishes) ? data.dishes.filter(Boolean) : []
+      }))
+    );
+  }
+
+  getRestaurantCardsForShowcase(): Observable<any[]> {
+    return this.getRestaurantCardsByIds([1, 2, 3]).pipe(
+      map((cards) => cards.map((card) => ({
+        ...card,
+        dishes: Array.isArray(card?.dishes) ? card.dishes.filter((dish: any) => !!dish && dish.isAvaiable !== false) : []
+      })))
+    );
+  }
+
+  getCapacityData(): Observable<any[]> {
+    return this.getRestaurantTableSummary();
+  }
+
+  getReservationStatusSummary(): Observable<any[]> {
+    return this.watchMyReservations().pipe(
+      map((reservations) => {
+        const all = Array.isArray(reservations) ? reservations : [];
+        const source = [
+          { statusId: 1, label: 'Pending' },
+          { statusId: 2, label: 'Confirmed' },
+          { statusId: 3, label: 'Canceled' },
+        ];
+
+        return source.map((item) => ({
+          ...item,
+          count: all.filter((reservation: any) => Number(reservation.statusId) === item.statusId).length,
+        }));
+      })
+    );
+  }
+
+  saveProfileImage(_profile: any, imageDataUrl: string) {
+    localStorage.setItem('profile_avatar', imageDataUrl);
+    this.refreshProfile();
+  }
+
+  getStatusLabel(statusId: number): string {
+    switch (Number(statusId)) {
+      case 1:
+        return 'Pending';
+      case 2:
+        return 'Confirmed';
+      case 3:
+        return 'Canceled';
+      default:
+        return `Status ${statusId}`;
+    }
+  }
+
+  getStatusClass(statusId: number): string {
+    switch (Number(statusId)) {
+      case 1:
+        return 'pending';
+      case 2:
+        return 'confirmed';
+      case 3:
+        return 'canceled';
+      default:
+        return 'unknown';
+    }
+  }
+
+  formatDate(value?: string | null): string {
+    if (!value) {
+      return 'N/A';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleString();
+  }
+
+  getDisplayName(profile: any): string {
+    const firstName = profile?.person?.firstName?.trim?.() || '';
+    const lastName = profile?.person?.lastName?.trim?.() || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    if (fullName) {
+      return fullName;
+    }
+
+    return profile?.user?.username || 'Guest User';
+  }
+
+  getInitials(profile: any): string {
+    const first = profile?.person?.firstName?.trim?.()?.charAt(0) || '';
+    const last = profile?.person?.lastName?.trim?.()?.charAt(0) || '';
+    const initials = `${first}${last}`.trim();
+
+    if (initials) {
+      return initials.toUpperCase();
+    }
+
+    const username = profile?.user?.username?.trim?.() || 'G';
+    return username.charAt(0).toUpperCase();
+  }
+
+  getAvatarColor(profile: any): string {
+    const name = this.getDisplayName(profile);
+    const palette = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626', '#db2777'];
+    let hash = 0;
+
+    for (let i = 0; i < name.length; i += 1) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    return palette[Math.abs(hash) % palette.length];
+  }
+
+  saveLocalProfileAvatar(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const result = typeof reader.result === 'string' ? reader.result : '';
+
+        if (!result) {
+          reject('Image load failed');
+          return;
+        }
+
+        localStorage.setItem('profile_avatar', result);
+        resolve(result);
+      };
+
+      reader.onerror = () => reject('Image load failed');
+      reader.readAsDataURL(file);
+    });
+  }
+
+  getStoredProfileAvatar(): string | null {
+    return localStorage.getItem('profile_avatar');
+  }
+
+  removeStoredProfileAvatar() {
+    localStorage.removeItem('profile_avatar');
+  }
+
+  getProfileAvatar(profile: any): string {
+    const stored = this.getStoredProfileAvatar();
+    if (stored) {
+      return stored;
+    }
+
+    const initials = this.getInitials(profile);
+    const color = encodeURIComponent(this.getAvatarColor(profile));
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+        <rect width="160" height="160" rx="80" fill="${color}" />
+        <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+              font-family="Arial, sans-serif" font-size="54" fill="white" font-weight="700">${initials}</text>
+      </svg>
+    `.trim();
+
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 }

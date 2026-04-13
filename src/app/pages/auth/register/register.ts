@@ -27,9 +27,56 @@ export class Register {
     private router: Router
   ) {}
 
-  onSubmit() {
+  private resetMessages() {
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  private isBlank(value: string) {
+    return !value.trim();
+  }
+
+  onSubmit() {
+    if (this.loading) {
+      return;
+    }
+
+    this.resetMessages();
+
+    if (this.isBlank(this.firstName)) {
+      this.errorMessage = 'First name is required';
+      return;
+    }
+
+    if (this.isBlank(this.lastName)) {
+      this.errorMessage = 'Last name is required';
+      return;
+    }
+
+    if (this.isBlank(this.username)) {
+      this.errorMessage = 'Username is required';
+      return;
+    }
+
+    if (this.isBlank(this.email)) {
+      this.errorMessage = 'Email is required';
+      return;
+    }
+
+    if (this.isBlank(this.phone)) {
+      this.errorMessage = 'Phone number is required';
+      return;
+    }
+
+    if (this.isBlank(this.address)) {
+      this.errorMessage = 'Address is required';
+      return;
+    }
+
+    if (this.password.length < 6) {
+      this.errorMessage = 'Password must be at least 6 characters';
+      return;
+    }
 
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Passwords do not match';
@@ -38,24 +85,28 @@ export class Register {
 
     this.loading = true;
 
-    this.proxyService.register({
-      person: {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        phone: this.phone,
-        address: this.address
-      },
+    const payload = this.proxyService.normalizeRegisterPayload({
+      firstName: this.firstName,
+      lastName: this.lastName,
       username: this.username,
       email: this.email,
+      phone: this.phone,
+      address: this.address,
       password: this.password,
-      registrationDate: new Date().toISOString()
-    }).subscribe({
+    });
+
+    this.proxyService.register(payload).subscribe({
       next: (result: any) => {
         this.loading = false;
 
         if (result?.status) {
-          this.successMessage = result.message || 'Account created';
-          this.router.navigate(['/login']);
+          this.successMessage = result.message || 'Account created successfully';
+          this.router.navigate(['/login'], {
+            state: {
+              registeredUsername: payload.username,
+              registeredPassword: payload.password,
+            }
+          });
           return;
         }
 
@@ -63,7 +114,7 @@ export class Register {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err?.error?.message || err?.error || 'Registration failed';
+        this.errorMessage = this.proxyService.extractErrorMessage(err, 'Registration failed');
       }
     });
   }
