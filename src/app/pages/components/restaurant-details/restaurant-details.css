@@ -1,0 +1,14 @@
+.restaurant-switcher button {
+    margin: 10px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: blanchedalmond;
+    width: 150px;
+    height: 40px;
+    color: red;
+    cursor: pointer;
+}
+.restaurant-switcher button:hover{
+    position: relative;
+    bottom: -10px;
+}

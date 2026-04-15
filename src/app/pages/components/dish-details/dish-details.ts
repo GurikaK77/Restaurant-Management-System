@@ -10,15 +10,21 @@ import { ProxyService } from '../../../services/proxy.service';
   styleUrl: './dish-details.css',
 })
 export class DishDetails implements OnInit {
-  data$!: Observable<any | null>;
+  dishes$!: Observable<any[]>;
+  selectedDish: any | null = null;
 
   constructor(public proxyService: ProxyService) {}
 
   ngOnInit(): void {
-    this.loadDish(5);
+    this.dishes$ = this.proxyService.getPreviewDishes();
+    this.dishes$.subscribe((dishes) => {
+      if (!this.selectedDish && dishes.length) {
+        this.selectedDish = dishes[0];
+      }
+    });
   }
 
-  loadDish(id: number) {
-    this.data$ = this.proxyService.getDishById(id);
+  selectDish(dish: any) {
+    this.selectedDish = dish;
   }
 }
