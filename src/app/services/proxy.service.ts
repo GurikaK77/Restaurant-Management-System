@@ -5,7 +5,6 @@ import {
   Observable,
   catchError,
   combineLatest,
-  forkJoin,
   map,
   of,
   shareReplay,
@@ -20,6 +19,8 @@ export class ProxyService {
   apiUrl = '/api';
   uploadsUrl = '/uploads';
 
+  private readonly localDishStoreKey = 'local_menu_dishes';
+
   private authStateSubject = new BehaviorSubject<string | null>(this.getToken());
   authState$ = this.authStateSubject.asObservable();
 
@@ -32,6 +33,7 @@ export class ProxyService {
   private rolesRefreshSubject = new BehaviorSubject<number>(0);
   rolesRefresh$ = this.rolesRefreshSubject.asObservable();
 
+<<<<<<< HEAD
   private tablesRefreshSubject = new BehaviorSubject<number>(0);
   tablesRefresh$ = this.tablesRefreshSubject.asObservable();
 
@@ -43,6 +45,13 @@ export class ProxyService {
     5: [17, 18, 19, 20],
     6: [21, 22, 23, 24]
   };
+=======
+  private menuRefreshSubject = new BehaviorSubject<number>(Date.now());
+  menuRefresh$ = this.menuRefreshSubject.asObservable();
+
+  private localDishRefreshSubject = new BehaviorSubject<number>(Date.now());
+  localDishRefresh$ = this.localDishRefreshSubject.asObservable();
+>>>>>>> 04dc1293d37e353b3df7444201c28c689cd24be6
 
   constructor(private http: HttpClient) {}
 
@@ -60,6 +69,7 @@ export class ProxyService {
     this.refreshProfile();
     this.refreshReservations();
     this.refreshRoles();
+    this.refreshMenus();
   }
 
   getToken() {
@@ -72,6 +82,7 @@ export class ProxyService {
     this.refreshProfile();
     this.refreshReservations();
     this.refreshRoles();
+    this.refreshMenus();
   }
 
   isLoggedIn() {
@@ -90,8 +101,17 @@ export class ProxyService {
     this.rolesRefreshSubject.next(Date.now());
   }
 
+<<<<<<< HEAD
   refreshTables() {
     this.tablesRefreshSubject.next(Date.now());
+=======
+  refreshMenus() {
+    this.menuRefreshSubject.next(Date.now());
+  }
+
+  refreshLocalDishes() {
+    this.localDishRefreshSubject.next(Date.now());
+>>>>>>> 04dc1293d37e353b3df7444201c28c689cd24be6
   }
 
   extractErrorMessage(error: unknown, fallback = 'Request failed'): string {
@@ -180,8 +200,7 @@ export class ProxyService {
 
   getRestaurants(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/Restaurant/GetAll`).pipe(
-      catchError(() => of([])),
-      shareReplay(1)
+      catchError(() => of([]))
     );
   }
 
@@ -204,12 +223,16 @@ export class ProxyService {
   }
 
   getMenus(): Observable<any[]> {
-    if (!this.isLoggedIn()) {
-      return of([]);
-    }
+    return combineLatest([this.authState$, this.menuRefresh$]).pipe(
+      switchMap(([token]) => {
+        if (!token) {
+          return of([]);
+        }
 
-    return this.http.get<any[]>(`${this.apiUrl}/Menu/GetAll`, this.getAuthOptions()).pipe(
-      catchError(() => of([])),
+        return this.http.get<any[]>(`${this.apiUrl}/Menu/GetAll`, this.getAuthOptions()).pipe(
+          catchError(() => of([]))
+        );
+      }),
       shareReplay(1)
     );
   }
@@ -222,15 +245,24 @@ export class ProxyService {
       form.append('image', body.image);
     }
 
-    return this.http.post(`${this.apiUrl}/Menu/CreateMenuWithImage`, form, this.getAuthOptions());
+    return this.http.post(`${this.apiUrl}/Menu/CreateMenuWithImage`, form, this.getAuthOptions()).pipe(
+      tap(() => this.refreshMenus())
+    );
   }
 
   updateMenu(id: number, body: { restaurantId: number; name: string }): Observable<any> {
-    return this.http.put(`${this.apiUrl}/Menu/UpdateMenu/${id}`, body, this.getAuthOptions());
+    return this.http.put(`${this.apiUrl}/Menu/UpdateMenu/${id}`, body, this.getAuthOptions()).pipe(
+      tap(() => this.refreshMenus())
+    );
   }
 
   deleteMenu(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/Menu/DeleteMenu/${id}`, this.getAuthOptions());
+    return this.http.delete(`${this.apiUrl}/Menu/DeleteMenu/${id}`, this.getAuthOptions()).pipe(
+      tap(() => {
+        this.removeLocalDishesForMenu(id);
+        this.refreshMenus();
+      })
+    );
   }
 
   addDishToMenu(menuId: number, body: { name: string; price: number; image?: File | null }): Observable<any> {
@@ -245,7 +277,9 @@ export class ProxyService {
   }
 
   removeDish(dishId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/Menu/RemoveDish/${dishId}`, this.getAuthOptions());
+    return this.http.delete(`${this.apiUrl}/Menu/RemoveDish/${dishId}`, this.getAuthOptions()).pipe(
+      tap(() => this.removeLocalDish(dishId))
+    );
   }
 
   getDishById(id: number): Observable<any | null> {
@@ -547,21 +581,15 @@ export class ProxyService {
   }
 
   getTotalRestaurants(): Observable<number> {
-    return this.getRestaurants().pipe(
-      map((result) => result.length)
-    );
+    return this.getRestaurants().pipe(map((result) => result.length));
   }
 
   getTotalMenus(): Observable<number> {
-    return this.getMenus().pipe(
-      map((result) => result.length)
-    );
+    return this.getMenus().pipe(map((result) => result.length));
   }
 
   getTotalCustomers(): Observable<number> {
-    return this.getCustomers().pipe(
-      map((result) => result.length)
-    );
+    return this.getCustomers().pipe(map((result) => result.length));
   }
 
   getTodayReservationsCount(): Observable<number> {
@@ -583,34 +611,173 @@ export class ProxyService {
   }
 
   getMenusWithRestaurantNames(): Observable<any[]> {
-    return forkJoin({
-      restaurants: this.getRestaurants(),
-      menus: this.getMenus()
-    }).pipe(
-      map((result) =>
-        result.menus.map((menu: any) => ({
+    return combineLatest([this.getRestaurants(), this.getMenus(), this.watchLocalDishes()]).pipe(
+      map(([restaurants, menus, localDishes]) =>
+        menus.map((menu: any) => ({
           ...menu,
-          restaurantName:
-            result.restaurants.find((restaurant: any) => restaurant.id === menu.restaurantId)?.name || 'Unknown restaurant'
+          restaurantName: restaurants.find((restaurant: any) => restaurant.id === menu.restaurantId)?.name || 'Unknown restaurant',
+          localDishCount: localDishes.filter((dish: any) => Number(dish.menuId) === Number(menu.id)).length
         }))
       )
     );
   }
 
-  getRestaurantCard(restaurantId: number): Observable<any> {
-    const dishIds = this.restaurantDishMap[restaurantId] || [];
-
-    return forkJoin({
-      restaurant: this.getRestaurantById(restaurantId),
-      menus: this.getMenusByRestaurantId(restaurantId),
-      dishes: dishIds.length
-        ? forkJoin(dishIds.map((id) => this.getDishById(id)))
-        : of([])
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === 'string' ? reader.result : '';
+        result ? resolve(result) : reject('Image load failed');
+      };
+      reader.onerror = () => reject('Image load failed');
+      reader.readAsDataURL(file);
     });
   }
 
-  getRestaurantCardsByIds(ids: number[]): Observable<any[]> {
-    return forkJoin(ids.map((id) => this.getRestaurantCard(id)));
+  private getStoredLocalDishes(): any[] {
+    try {
+      const raw = localStorage.getItem(this.localDishStoreKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private setStoredLocalDishes(items: any[]) {
+    localStorage.setItem(this.localDishStoreKey, JSON.stringify(items));
+    this.refreshLocalDishes();
+  }
+
+  watchLocalDishes(): Observable<any[]> {
+    return this.localDishRefresh$.pipe(map(() => this.getStoredLocalDishes()));
+  }
+
+  async rememberLocalDish(menuId: number, dish: { name: string; price: number; image?: File | null }): Promise<void> {
+    const items = this.getStoredLocalDishes();
+    const imageUrl = dish.image ? await this.readFileAsDataUrl(dish.image) : null;
+    items.push({
+      id: Date.now() + Math.floor(Math.random() * 10000),
+      menuId: Number(menuId),
+      name: dish.name,
+      price: Number(dish.price),
+      isAvaiable: true,
+      imageUrl
+    });
+    this.setStoredLocalDishes(items);
+  }
+
+  removeLocalDish(dishId: number) {
+    const next = this.getStoredLocalDishes().filter((item: any) => Number(item.id) !== Number(dishId));
+    this.setStoredLocalDishes(next);
+  }
+
+  removeLocalDishesForMenu(menuId: number) {
+    const next = this.getStoredLocalDishes().filter((item: any) => Number(item.menuId) !== Number(menuId));
+    this.setStoredLocalDishes(next);
+  }
+
+  getStructuredMenuData(): Observable<any[]> {
+    return combineLatest([this.getRestaurants(), this.getMenus(), this.watchLocalDishes()]).pipe(
+      map(([restaurants, menus, localDishes]) => {
+        return restaurants.map((restaurant: any) => {
+          const restaurantMenus = menus
+            .filter((menu: any) => Number(menu.restaurantId) === Number(restaurant.id))
+            .map((menu: any) => ({
+              ...menu,
+              dishes: localDishes.filter((dish: any) => Number(dish.menuId) === Number(menu.id))
+            }));
+
+          return {
+            ...restaurant,
+            menus: restaurantMenus,
+            dishes: restaurantMenus.flatMap((menu: any) => menu.dishes)
+          };
+        });
+      })
+    );
+  }
+
+  getRestaurantDetailWithMenusAndDishes(id: number): Observable<any> {
+    return this.getStructuredMenuData().pipe(
+      map((restaurants) => {
+        const restaurant = restaurants.find((item: any) => Number(item.id) === Number(id));
+        return restaurant || { restaurant: null, menus: [], dishes: [] };
+      }),
+      map((restaurant: any) => ({
+        restaurant,
+        menus: Array.isArray(restaurant?.menus) ? restaurant.menus : [],
+        dishes: Array.isArray(restaurant?.dishes) ? restaurant.dishes : []
+      }))
+    );
+  }
+
+  getRestaurantCardsForShowcase(): Observable<any[]> {
+    return this.getStructuredMenuData().pipe(
+      map((restaurants) => restaurants.filter((restaurant: any) => restaurant.dishes.length > 0))
+    );
+  }
+
+  getPreviewDishes(): Observable<any[]> {
+    return this.watchLocalDishes().pipe(
+      map((items) => items.slice(0, 3))
+    );
+  }
+
+  getCapacityData(): Observable<any[]> {
+    return this.getRestaurantTableSummary();
+  }
+
+  getRestaurantTableSummary(): Observable<any[]> {
+    return this.getRestaurants().pipe(
+      map((restaurants) =>
+        restaurants.map((restaurant) => ({
+          id: restaurant.id,
+          name: restaurant.name,
+          totalTables: restaurant.totalTables,
+          seatsPerTable: restaurant.seatsPerTable,
+          totalCapacity: Number(restaurant.totalTables || 0) * Number(restaurant.seatsPerTable || 0)
+        }))
+      )
+    );
+  }
+
+  getUsersWithRoles(): Observable<any[]> {
+    return combineLatest([this.getAllUsers(), this.getAllRoles()]).pipe(map(([users]) => users));
+  }
+
+  getCustomerSummaries(): Observable<any[]> {
+    return combineLatest([this.getCustomers(), this.watchIsAdmin()]).pipe(map(([customers]) => customers));
+  }
+
+  getImageUrl(imageUrl?: string | null): string {
+    if (!imageUrl) {
+      return 'assets/no-image.png';
+    }
+
+    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:image')) {
+      return imageUrl;
+    }
+
+    return `${imageUrl}`;
+  }
+
+  getReservationStatusSummary(): Observable<any[]> {
+    return this.watchMyReservations().pipe(
+      map((reservations) => {
+        const all = Array.isArray(reservations) ? reservations : [];
+        const source = [
+          { statusId: 1, label: 'Pending' },
+          { statusId: 2, label: 'Confirmed' },
+          { statusId: 3, label: 'Canceled' },
+        ];
+
+        return source.map((item) => ({
+          ...item,
+          count: all.filter((reservation: any) => Number(reservation.statusId) === item.statusId).length,
+        }));
+      })
+    );
   }
 
   getSummaryInfo(): Observable<any> {
@@ -629,86 +796,6 @@ export class ProxyService {
         username: profile?.user?.username || 'Guest',
         isAdmin: roles.some((role) => String(role.name).toLowerCase() === 'admin')
       }))
-    );
-  }
-
-  getRestaurantTableSummary(): Observable<any[]> {
-    return this.getRestaurants().pipe(
-      map((restaurants) =>
-        restaurants.map((restaurant) => ({
-          id: restaurant.id,
-          name: restaurant.name,
-          totalTables: restaurant.totalTables,
-          seatsPerTable: restaurant.seatsPerTable,
-          totalCapacity: Number(restaurant.totalTables || 0) * Number(restaurant.seatsPerTable || 0)
-        }))
-      )
-    );
-  }
-
-  getUsersWithRoles(): Observable<any[]> {
-    return combineLatest([this.getAllUsers(), this.getAllRoles()]).pipe(
-      map(([users]) => users)
-    );
-  }
-
-  getCustomerSummaries(): Observable<any[]> {
-    return combineLatest([this.getCustomers(), this.watchIsAdmin()]).pipe(
-      map(([customers]) => customers)
-    );
-  }
-
-  getImageUrl(imageUrl?: string | null): string {
-    if (!imageUrl) {
-      return 'assets/no-image.png';
-    }
-
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    }
-
-    return `${imageUrl}`;
-  }
-
-
-
-  getRestaurantDetailWithMenusAndDishes(id: number): Observable<any> {
-    return this.getRestaurantCard(id).pipe(
-      map((data) => ({
-        ...data,
-        dishes: Array.isArray(data?.dishes) ? data.dishes.filter(Boolean) : []
-      }))
-    );
-  }
-
-  getRestaurantCardsForShowcase(): Observable<any[]> {
-    return this.getRestaurantCardsByIds([1, 2, 3]).pipe(
-      map((cards) => cards.map((card) => ({
-        ...card,
-        dishes: Array.isArray(card?.dishes) ? card.dishes.filter((dish: any) => !!dish && dish.isAvaiable !== false) : []
-      })))
-    );
-  }
-
-  getCapacityData(): Observable<any[]> {
-    return this.getRestaurantTableSummary();
-  }
-
-  getReservationStatusSummary(): Observable<any[]> {
-    return this.watchMyReservations().pipe(
-      map((reservations) => {
-        const all = Array.isArray(reservations) ? reservations : [];
-        const source = [
-          { statusId: 1, label: 'Pending' },
-          { statusId: 2, label: 'Confirmed' },
-          { statusId: 3, label: 'Canceled' },
-        ];
-
-        return source.map((item) => ({
-          ...item,
-          count: all.filter((reservation: any) => Number(reservation.statusId) === item.statusId).length,
-        }));
-      })
     );
   }
 

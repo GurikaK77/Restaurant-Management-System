@@ -130,7 +130,18 @@ export class AdminMenuManager implements OnInit {
       price: Number(this.dishPrice),
       image: this.dishImage
     }).subscribe({
-      next: (result: any) => {
+      next: async (result: any) => {
+        const menuId = Number(this.dishMenuId);
+        const dishName = this.dishName;
+        const dishPrice = Number(this.dishPrice);
+        const dishImage = this.dishImage;
+
+        await this.proxyService.rememberLocalDish(menuId, {
+          name: dishName,
+          price: dishPrice,
+          image: dishImage
+        });
+
         this.dishName = '';
         this.dishPrice = 0;
         this.dishImage = null;
@@ -163,6 +174,7 @@ export class AdminMenuManager implements OnInit {
 
     this.proxyService.removeDish(Number(this.removeDishId)).subscribe({
       next: (result: any) => {
+        this.proxyService.removeLocalDish(Number(this.removeDishId));
         this.setMessage('success', result?.message || 'Dish removed.');
         if (this.selectedDish?.id === Number(this.removeDishId)) {
           this.selectedDish = null;

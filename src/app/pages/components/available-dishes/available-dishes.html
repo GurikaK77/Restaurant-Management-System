@@ -1,19 +1,22 @@
 @if (data$ | async; as data) {
   @if (data.length) {
     <div class="dish-groups">
-      @for (restaurantCard of data; track restaurantCard.restaurant.id) {
+      @for (restaurantCard of data; track restaurantCard.id) {
         <section class="dish-group">
-          <h4>{{ restaurantCard.restaurant.name }}</h4>
+          <h4>{{ restaurantCard.name }}</h4>
           <div class="dish-list">
-            @for (dish of restaurantCard.dishes; track dish.id) {
-              @if (dish.isAvaiable) {
-                <article class="dish-card">
-                  <img class="dish-image" [src]="proxyService.getImageUrl(dish.imageUrl)" [alt]="dish.name">
-                  <div>
-                    <strong>{{ dish.name }}</strong>
-                    <p>{{ dish.price | number:'1.2-2' }} ₾</p>
-                  </div>
-                </article>
+            @for (menu of restaurantCard.menus; track menu.id) {
+              @for (dish of menu.dishes; track dish.id) {
+                @if (dish.isAvaiable) {
+                  <article class="dish-card">
+                    <img class="dish-image" [src]="proxyService.getImageUrl(dish.imageUrl)" [alt]="dish.name">
+                    <div>
+                      <strong>{{ dish.name }}</strong>
+                      <p>{{ dish.price | number:'1.2-2' }} ₾</p>
+                      <small>Menu ID: {{ menu.id }} · Dish ID: {{ dish.id }}</small>
+                    </div>
+                  </article>
+                }
               }
             }
           </div>
@@ -21,7 +24,7 @@
       }
     </div>
   } @else {
-    <p class="dish-empty">Login first to load dishes.</p>
+    <p class="dish-empty">ჯერ კერძები არ გაქვს დამატებული. Dish რომ გამოჩნდეს, დაამატე Menus → Admin tools-იდან.</p>
   }
 } @else {
   <p class="dish-empty">Loading dishes...</p>

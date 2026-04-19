@@ -1,21 +1,25 @@
-<div class="dish-switcher">
-  <button type="button" (click)="loadDish(5)">Dish 5</button>
-  <button type="button" (click)="loadDish(6)">Dish 6</button>
-  <button type="button" (click)="loadDish(9)">Dish 9</button>
-</div>
-
-@if (data$ | async; as dish) {
-  @if (dish) {
-    <div class="dish-detail-card">
-      <img class="dish-detail-image" [src]="proxyService.getImageUrl(dish.imageUrl)" [alt]="dish.name">
-      <div class="dish-detail-content">
-        <h4>{{ dish.name }}</h4>
-        <p>Price: {{ dish.price | number:'1.2-2' }} ₾</p>
-        <p>Available: {{ dish.isAvaiable ? 'Yes' : 'No' }}</p>
-      </div>
+@if (dishes$ | async; as dishes) {
+  @if (dishes.length) {
+    <div class="dish-switcher">
+      @for (dish of dishes; track dish.id) {
+        <button type="button" (click)="selectDish(dish)">{{ dish.name }}</button>
+      }
     </div>
+
+    @if (selectedDish) {
+      <div class="dish-detail-card">
+        <img class="dish-detail-image" [src]="proxyService.getImageUrl(selectedDish.imageUrl)" [alt]="selectedDish.name">
+        <div class="dish-detail-content">
+          <h4>{{ selectedDish.name }}</h4>
+          <p>Dish ID: {{ selectedDish.id }}</p>
+          <p>Menu ID: {{ selectedDish.menuId }}</p>
+          <p>Price: {{ selectedDish.price | number:'1.2-2' }} ₾</p>
+          <p>Available: {{ selectedDish.isAvaiable ? 'Yes' : 'No' }}</p>
+        </div>
+      </div>
+    }
   } @else {
-    <p class="dish-detail-empty">Login first to load dish details.</p>
+    <p class="dish-detail-empty">ჯერ არცერთი კერძი არ ჩანს. დაამატე dish Menus → Admin tools-იდან.</p>
   }
 } @else {
   <p class="dish-detail-empty">Loading...</p>
