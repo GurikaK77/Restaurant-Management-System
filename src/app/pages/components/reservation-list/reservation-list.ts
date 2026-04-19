@@ -13,11 +13,14 @@ import { ProxyService } from '../../../services/proxy.service';
 export class ReservationList implements OnInit {
   data$!: Observable<any[]>;
   restaurants$!: Observable<any[]>;
+  availableTables$!: Observable<any[]>;
   restaurants: any[] = [];
+  availableTables: any[] = [];
+  availableTableIdsText = '';
 
   restaurantId = 1;
   date = '';
-  tableNumber = 1;
+  tableNumber = 0;
   guestCount = 2;
   submitting = false;
   errorMessage = '';
@@ -28,7 +31,13 @@ export class ReservationList implements OnInit {
   ngOnInit(): void {
     this.data$ = this.proxyService.watchMyReservations();
     this.restaurants$ = this.proxyService.getRestaurants();
-    this.restaurants$.subscribe((data) => this.restaurants = data);
+    this.restaurants$.subscribe((data) => {
+      this.restaurants = data;
+      if (data.length && !data.some((item) => item.id === this.restaurantId)) {
+        this.restaurantId = data[0].id;
+      }
+      this.loadAvailableTables();
+    });
     this.setDefaultDate();
   }
 
@@ -36,6 +45,29 @@ export class ReservationList implements OnInit {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     this.date = tomorrow.toISOString().slice(0, 16);
+  }
+
+  onRestaurantChange() {
+    this.tableNumber = 0;
+    this.loadAvailableTables();
+  }
+
+  loadAvailableTables() {
+    this.availableTables$ = this.proxyService.getAvailableTables(Number(this.restaurantId));
+    this.availableTables$.subscribe((tables) => {
+      this.availableTables = tables;
+      this.availableTableIdsText = tables.map((table) => table.id).join(', ');
+
+      if (!tables.length) {
+        this.tableNumber = 0;
+        return;
+      }
+
+      const currentExists = tables.some((table) => Number(table.id) === Number(this.tableNumber));
+      if (!currentExists) {
+        this.tableNumber = Number(tables[0].id);
+      }
+    });
   }
 
   createReservation() {
@@ -65,10 +97,11 @@ export class ReservationList implements OnInit {
         this.submitting = false;
         this.successMessage = 'Reservation created successfully.';
         this.proxyService.refreshReservations();
+        this.loadAvailableTables();
       },
       error: (err) => {
         this.submitting = false;
-        this.errorMessage = err?.error || 'Reservation could not be created.';
+        this.errorMessage = this.proxyService.extractErrorMessage(err, 'Reservation could not be created.');
       }
     });
   }
@@ -83,7 +116,7 @@ export class ReservationList implements OnInit {
         this.proxyService.refreshReservations();
       },
       error: (err) => {
-        this.errorMessage = err?.error || 'Reservation could not be deleted.';
+        this.errorMessage = this.proxyService.extractErrorMessage(err, 'Reservation could not be deleted.');
       }
     });
   }
@@ -102,7 +135,7 @@ export class ReservationList implements OnInit {
         this.proxyService.refreshReservations();
       },
       error: (err) => {
-        this.errorMessage = err?.error || 'Reservation could not be cancelled.';
+        this.errorMessage = this.proxyService.extractErrorMessage(err, 'Reservation could not be cancelled.');
       }
     });
   }

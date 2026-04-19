@@ -32,6 +32,9 @@ export class ProxyService {
   private rolesRefreshSubject = new BehaviorSubject<number>(0);
   rolesRefresh$ = this.rolesRefreshSubject.asObservable();
 
+  private tablesRefreshSubject = new BehaviorSubject<number>(0);
+  tablesRefresh$ = this.tablesRefreshSubject.asObservable();
+
   private restaurantDishMap: Record<number, number[]> = {
     1: [1, 2, 3, 4],
     2: [5, 6, 7, 8],
@@ -85,6 +88,10 @@ export class ProxyService {
 
   refreshRoles() {
     this.rolesRefreshSubject.next(Date.now());
+  }
+
+  refreshTables() {
+    this.tablesRefreshSubject.next(Date.now());
   }
 
   extractErrorMessage(error: unknown, fallback = 'Request failed'): string {
@@ -481,6 +488,61 @@ export class ProxyService {
   deleteReservation(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/Reservation/DeleteReservation/${id}`, this.getAuthOptions()).pipe(
       tap(() => this.refreshReservations())
+    );
+  }
+
+
+  getTablesByRestaurant(restaurantId: number): Observable<any[]> {
+    if (!restaurantId) {
+      return of([]);
+    }
+
+    return this.http.get<any[]>(`${this.apiUrl}/Table/GetAllByRestaurant/${restaurantId}`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  watchTablesByRestaurant(restaurantId: number): Observable<any[]> {
+    return this.tablesRefresh$.pipe(
+      switchMap(() => this.getTablesByRestaurant(restaurantId))
+    );
+  }
+
+  getAvailableTables(restaurantId: number): Observable<any[]> {
+    if (!restaurantId) {
+      return of([]);
+    }
+
+    return this.http.get<any[]>(`${this.apiUrl}/Table/GetAvailable/${restaurantId}`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  getTableById(id: number): Observable<any | null> {
+    if (!id) {
+      return of(null);
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/Table/GetById/${id}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  createTable(body: { restaurantId: number; isAvailable: boolean }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Table/CreateTable`, {
+      restaurantId: Number(body.restaurantId),
+      isAvailable: !!body.isAvailable
+    }, this.getAuthOptions()).pipe(
+      tap(() => this.refreshTables())
+    );
+  }
+
+  updateTableAvailability(id: number, isAvailable: boolean): Observable<any> {
+    return this.http.put(`${this.apiUrl}/Table/UpdateTableAvailability/${id}`, {
+      id: Number(id),
+      isAvailable: !!isAvailable
+    }, this.getAuthOptions()).pipe(
+      tap(() => this.refreshTables())
     );
   }
 

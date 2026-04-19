@@ -2,16 +2,16 @@
   <div class="reservation-create-card">
     <div class="reservation-create-head">
       <h4>Make a reservation</h4>
-      <p>Choose restaurant, date, table and guest count.</p>
+      <p>Choose a restaurant, then pick one of the currently available table IDs from the backend table service.</p>
     </div>
 
     @if (restaurants$ | async; as restaurants) {
       <div class="reservation-form-grid">
         <label>
           <span>Restaurant</span>
-          <select [(ngModel)]="restaurantId" name="restaurantId">
+          <select [(ngModel)]="restaurantId" name="restaurantId" (ngModelChange)="onRestaurantChange()">
             @for (restaurant of restaurants; track restaurant.id) {
-              <option [ngValue]="restaurant.id">{{ restaurant.name }}</option>
+              <option [ngValue]="restaurant.id">{{ restaurant.name }} · Restaurant ID {{ restaurant.id }}</option>
             }
           </select>
         </label>
@@ -22,8 +22,16 @@
         </label>
 
         <label>
-          <span>Table number</span>
-          <input type="number" min="1" [(ngModel)]="tableNumber" name="tableNumber">
+          <span>Available table</span>
+          <select [(ngModel)]="tableNumber" name="tableNumber" [disabled]="!availableTables.length">
+            @if (availableTables.length) {
+              @for (table of availableTables; track table.id) {
+                <option [ngValue]="table.id">Table ID {{ table.id }} · {{ table.isAvailable ? 'Available' : 'Unavailable' }}</option>
+              }
+            } @else {
+              <option [ngValue]="0">No available tables for this restaurant</option>
+            }
+          </select>
         </label>
 
         <label>
@@ -32,7 +40,15 @@
         </label>
       </div>
 
-      <button class="reserve-btn" type="button" (click)="createReservation()" [disabled]="submitting">
+      <div class="table-hint-row">
+        @if (availableTables.length) {
+          <span class="table-hint success">Available table IDs: {{ availableTableIdsText }}</span>
+        } @else {
+          <span class="table-hint error">This restaurant has no available tables yet. Add them from the Restaurant page admin tools.</span>
+        }
+      </div>
+
+      <button class="reserve-btn" type="button" (click)="createReservation()" [disabled]="submitting || !availableTables.length">
         {{ submitting ? 'Saving...' : 'Reserve now' }}
       </button>
     }
@@ -64,7 +80,7 @@
 
             <ul>
               <li><strong>Date:</strong> {{ item.date | date:'medium' }}</li>
-              <li><strong>Table:</strong> {{ item.tableNumber }}</li>
+              <li><strong>Table ID:</strong> {{ item.tableNumber }}</li>
               <li><strong>Guests:</strong> {{ item.guestCount }}</li>
             </ul>
 

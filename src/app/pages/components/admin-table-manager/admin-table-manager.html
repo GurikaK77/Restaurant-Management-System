@@ -1,0 +1,93 @@
+@if (isAdmin$ | async) {
+  <div class="stack">
+    @if (message) {
+      <div class="status-msg" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">{{ message }}</div>
+    }
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Table tools</h3>
+          <p class="subtle">Uses <code>Table/CreateTable</code>, <code>GetAllByRestaurant</code> and <code>UpdateTableAvailability</code>.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Restaurant ID for new table</label>
+          <select [(ngModel)]="createRestaurantId" name="createRestaurantId">
+            @for (restaurant of restaurants; track restaurant.id) {
+              <option [ngValue]="restaurant.id">{{ restaurant.name }} · ID {{ restaurant.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Initial availability</label>
+          <select [(ngModel)]="isAvailable" name="isAvailable">
+            <option [ngValue]="true">true</option>
+            <option [ngValue]="false">false</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="primary-action" type="button" (click)="createTable()">Create table</button>
+      </div>
+    </section>
+
+    <section class="entity-card">
+      <div class="entity-title">
+        <div>
+          <h3>Tables by restaurant</h3>
+          <p class="subtle">Choose a restaurant to see table IDs and current availability.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Restaurant ID to inspect</label>
+          <select [(ngModel)]="restaurantId" name="restaurantId" (ngModelChange)="loadTables()">
+            @for (restaurant of restaurants; track restaurant.id) {
+              <option [ngValue]="restaurant.id">{{ restaurant.name }} · ID {{ restaurant.id }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (loadingTables) {
+        <div class="empty-box">Loading tables...</div>
+      } @else if (tables.length) {
+        <div class="entity-list">
+          @for (table of tables; track table.id) {
+            <article class="entity-card">
+              <div class="entity-title">
+                <div>
+                  <h4>Table ID {{ table.id }}</h4>
+                  <p class="subtle">{{ getRestaurantName(table.restaurantId) }} · Restaurant ID {{ table.restaurantId }}</p>
+                </div>
+                <span class="status-chip" [class.confirmed]="table.isAvailable" [class.canceled]="!table.isAvailable">
+                  {{ table.isAvailable ? 'Available' : 'Unavailable' }}
+                </span>
+              </div>
+
+              <div class="badge-row">
+                <span class="meta-chip">isAvailable: {{ table.isAvailable ? 'true' : 'false' }}</span>
+              </div>
+
+              <div class="actions-row">
+                <button class="secondary-action" type="button" (click)="toggleAvailability(table)">
+                  Set {{ table.isAvailable ? 'false' : 'true' }}
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-box">No tables found for this restaurant yet.</div>
+      }
+    </section>
+  </div>
+} @else {
+  <div class="empty-box">Admin login is required for table tools.</div>
+}
