@@ -33,10 +33,16 @@ export class ProxyService {
   private rolesRefreshSubject = new BehaviorSubject<number>(0);
   rolesRefresh$ = this.rolesRefreshSubject.asObservable();
 
-<<<<<<< HEAD
   private tablesRefreshSubject = new BehaviorSubject<number>(0);
   tablesRefresh$ = this.tablesRefreshSubject.asObservable();
 
+  private menuRefreshSubject = new BehaviorSubject<number>(Date.now());
+  menuRefresh$ = this.menuRefreshSubject.asObservable();
+
+  private localDishRefreshSubject = new BehaviorSubject<number>(Date.now());
+  localDishRefresh$ = this.localDishRefreshSubject.asObservable();
+
+  // This map can be used later if needed; preserved as originally present
   private restaurantDishMap: Record<number, number[]> = {
     1: [1, 2, 3, 4],
     2: [5, 6, 7, 8],
@@ -45,15 +51,10 @@ export class ProxyService {
     5: [17, 18, 19, 20],
     6: [21, 22, 23, 24]
   };
-=======
-  private menuRefreshSubject = new BehaviorSubject<number>(Date.now());
-  menuRefresh$ = this.menuRefreshSubject.asObservable();
-
-  private localDishRefreshSubject = new BehaviorSubject<number>(Date.now());
-  localDishRefresh$ = this.localDishRefreshSubject.asObservable();
->>>>>>> 04dc1293d37e353b3df7444201c28c689cd24be6
 
   constructor(private http: HttpClient) {}
+
+  // ─── AUTH ────────────────────────────────────────────────────────────────────
 
   login(body: { username: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/User/Login`, body);
@@ -89,6 +90,8 @@ export class ProxyService {
     return !!this.getToken();
   }
 
+  // ─── REFRESH TRIGGERS ───────────────────────────────────────────────────────
+
   refreshReservations() {
     this.reservationsRefreshSubject.next(Date.now());
   }
@@ -101,18 +104,19 @@ export class ProxyService {
     this.rolesRefreshSubject.next(Date.now());
   }
 
-<<<<<<< HEAD
   refreshTables() {
     this.tablesRefreshSubject.next(Date.now());
-=======
+  }
+
   refreshMenus() {
     this.menuRefreshSubject.next(Date.now());
   }
 
   refreshLocalDishes() {
     this.localDishRefreshSubject.next(Date.now());
->>>>>>> 04dc1293d37e353b3df7444201c28c689cd24be6
   }
+
+  // ─── ERROR HANDLING ──────────────────────────────────────────────────────────
 
   extractErrorMessage(error: unknown, fallback = 'Request failed'): string {
     if (error instanceof HttpErrorResponse) {
@@ -184,19 +188,48 @@ export class ProxyService {
     };
   }
 
+  // ─── PRIVATE HELPERS ─────────────────────────────────────────────────────────
+
   private getAuthOptions() {
     const token = this.getToken();
-
     if (!token) {
       return {};
     }
-
     return {
       headers: new HttpHeaders({
         Authorization: `Bearer ${token}`
       })
     };
   }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === 'string' ? reader.result : '';
+        result ? resolve(result) : reject('Image load failed');
+      };
+      reader.onerror = () => reject('Image load failed');
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private getStoredLocalDishes(): any[] {
+    try {
+      const raw = localStorage.getItem(this.localDishStoreKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private setStoredLocalDishes(items: any[]) {
+    localStorage.setItem(this.localDishStoreKey, JSON.stringify(items));
+    this.refreshLocalDishes();
+  }
+
+  // ─── RESTAURANTS ─────────────────────────────────────────────────────────────
 
   getRestaurants(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/Restaurant/GetAll`).pipe(
@@ -222,13 +255,14 @@ export class ProxyService {
     return this.http.delete(`${this.apiUrl}/Restaurant/Remove/${id}`, this.getAuthOptions());
   }
 
+  // ─── MENUS ───────────────────────────────────────────────────────────────────
+
   getMenus(): Observable<any[]> {
     return combineLatest([this.authState$, this.menuRefresh$]).pipe(
       switchMap(([token]) => {
         if (!token) {
           return of([]);
         }
-
         return this.http.get<any[]>(`${this.apiUrl}/Menu/GetAll`, this.getAuthOptions()).pipe(
           catchError(() => of([]))
         );
@@ -244,7 +278,6 @@ export class ProxyService {
     if (body.image) {
       form.append('image', body.image);
     }
-
     return this.http.post(`${this.apiUrl}/Menu/CreateMenuWithImage`, form, this.getAuthOptions()).pipe(
       tap(() => this.refreshMenus())
     );
@@ -272,7 +305,6 @@ export class ProxyService {
     if (body.image) {
       form.append('image', body.image);
     }
-
     return this.http.post(`${this.apiUrl}/Menu/AddDish/${menuId}`, form, this.getAuthOptions());
   }
 
@@ -286,17 +318,47 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.get<any>(`${this.apiUrl}/Menu/GetDishById/${id}`, this.getAuthOptions()).pipe(
       catchError(() => of(null))
     );
   }
 
+  // ─── LOCAL DISHES (OFFLINE SUPPORT) ──────────────────────────────────────────
+
+  watchLocalDishes(): Observable<any[]> {
+    return this.localDishRefresh$.pipe(map(() => this.getStoredLocalDishes()));
+  }
+
+  async rememberLocalDish(menuId: number, dish: { name: string; price: number; image?: File | null }): Promise<void> {
+    const items = this.getStoredLocalDishes();
+    const imageUrl = dish.image ? await this.readFileAsDataUrl(dish.image) : null;
+    items.push({
+      id: Date.now() + Math.floor(Math.random() * 10000),
+      menuId: Number(menuId),
+      name: dish.name,
+      price: Number(dish.price),
+      isAvaiable: true,
+      imageUrl
+    });
+    this.setStoredLocalDishes(items);
+  }
+
+  removeLocalDish(dishId: number) {
+    const next = this.getStoredLocalDishes().filter((item: any) => Number(item.id) !== Number(dishId));
+    this.setStoredLocalDishes(next);
+  }
+
+  removeLocalDishesForMenu(menuId: number) {
+    const next = this.getStoredLocalDishes().filter((item: any) => Number(item.menuId) !== Number(menuId));
+    this.setStoredLocalDishes(next);
+  }
+
+  // ─── PROFILE ─────────────────────────────────────────────────────────────────
+
   getProfile(): Observable<any | null> {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.get<any>(`${this.apiUrl}/User/GetProfile`, this.getAuthOptions()).pipe(
       catchError(() => of(null))
     );
@@ -312,7 +374,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.get<any>(`${this.apiUrl}/User/GetById/${id}`, this.getAuthOptions()).pipe(
       catchError(() => of(null))
     );
@@ -334,7 +395,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.delete(`${this.apiUrl}/User/DeleteProfile`, this.getAuthOptions());
   }
 
@@ -342,11 +402,12 @@ export class ProxyService {
     return this.http.delete(`${this.apiUrl}/User/DeleteProfile/${id}`, this.getAuthOptions());
   }
 
+  // ─── ROLES ───────────────────────────────────────────────────────────────────
+
   getUserRoles(): Observable<any[]> {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/User/GetRolesById`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -362,7 +423,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/User/GetRoles/${id}`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -378,7 +438,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Admin/GetAllUsers`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -388,7 +447,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Admin/GetAllCustomers`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -398,7 +456,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Role/GetAllRoles`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -434,11 +491,12 @@ export class ProxyService {
     );
   }
 
+  // ─── RESERVATIONS ────────────────────────────────────────────────────────────
+
   getAllReservations(): Observable<any[]> {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Reservation/GetAll`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -448,7 +506,6 @@ export class ProxyService {
     if (!this.isLoggedIn() || !date) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Reservation/GetReservationsByDate/${date}`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -458,7 +515,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.get<any>(`${this.apiUrl}/Reservation/GetById/${id}`, this.getAuthOptions()).pipe(
       catchError(() => of(null))
     );
@@ -468,7 +524,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Reservation/Get`, this.getAuthOptions()).pipe(
       catchError(() => of([]))
     );
@@ -490,7 +545,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.post(`${this.apiUrl}/Reservation/Add`, {
       customerId: 0,
       restaurantId: body.restaurantId,
@@ -513,7 +567,6 @@ export class ProxyService {
     if (!this.isLoggedIn()) {
       return of(null);
     }
-
     return this.http.put(`${this.apiUrl}/Reservation/Cancel/${id}`, {}, this.getAuthOptions()).pipe(
       tap(() => this.refreshReservations())
     );
@@ -525,12 +578,12 @@ export class ProxyService {
     );
   }
 
+  // ─── TABLES ──────────────────────────────────────────────────────────────────
 
   getTablesByRestaurant(restaurantId: number): Observable<any[]> {
     if (!restaurantId) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Table/GetAllByRestaurant/${restaurantId}`).pipe(
       catchError(() => of([]))
     );
@@ -546,7 +599,6 @@ export class ProxyService {
     if (!restaurantId) {
       return of([]);
     }
-
     return this.http.get<any[]>(`${this.apiUrl}/Table/GetAvailable/${restaurantId}`).pipe(
       catchError(() => of([]))
     );
@@ -556,7 +608,6 @@ export class ProxyService {
     if (!id) {
       return of(null);
     }
-
     return this.http.get<any>(`${this.apiUrl}/Table/GetById/${id}`).pipe(
       catchError(() => of(null))
     );
@@ -580,6 +631,8 @@ export class ProxyService {
     );
   }
 
+  // ─── DASHBOARD / AGGREGATED DATA ─────────────────────────────────────────────
+
   getTotalRestaurants(): Observable<number> {
     return this.getRestaurants().pipe(map((result) => result.length));
   }
@@ -594,7 +647,6 @@ export class ProxyService {
 
   getTodayReservationsCount(): Observable<number> {
     const today = new Date().toISOString().split('T')[0];
-
     return this.getAllReservations().pipe(
       map((reservations) =>
         reservations.filter((reservation) =>
@@ -615,66 +667,11 @@ export class ProxyService {
       map(([restaurants, menus, localDishes]) =>
         menus.map((menu: any) => ({
           ...menu,
-          restaurantName: restaurants.find((restaurant: any) => restaurant.id === menu.restaurantId)?.name || 'Unknown restaurant',
+          restaurantName: restaurants.find((r: any) => r.id === menu.restaurantId)?.name || 'Unknown restaurant',
           localDishCount: localDishes.filter((dish: any) => Number(dish.menuId) === Number(menu.id)).length
         }))
       )
     );
-  }
-
-  private readFileAsDataUrl(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = typeof reader.result === 'string' ? reader.result : '';
-        result ? resolve(result) : reject('Image load failed');
-      };
-      reader.onerror = () => reject('Image load failed');
-      reader.readAsDataURL(file);
-    });
-  }
-
-  private getStoredLocalDishes(): any[] {
-    try {
-      const raw = localStorage.getItem(this.localDishStoreKey);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private setStoredLocalDishes(items: any[]) {
-    localStorage.setItem(this.localDishStoreKey, JSON.stringify(items));
-    this.refreshLocalDishes();
-  }
-
-  watchLocalDishes(): Observable<any[]> {
-    return this.localDishRefresh$.pipe(map(() => this.getStoredLocalDishes()));
-  }
-
-  async rememberLocalDish(menuId: number, dish: { name: string; price: number; image?: File | null }): Promise<void> {
-    const items = this.getStoredLocalDishes();
-    const imageUrl = dish.image ? await this.readFileAsDataUrl(dish.image) : null;
-    items.push({
-      id: Date.now() + Math.floor(Math.random() * 10000),
-      menuId: Number(menuId),
-      name: dish.name,
-      price: Number(dish.price),
-      isAvaiable: true,
-      imageUrl
-    });
-    this.setStoredLocalDishes(items);
-  }
-
-  removeLocalDish(dishId: number) {
-    const next = this.getStoredLocalDishes().filter((item: any) => Number(item.id) !== Number(dishId));
-    this.setStoredLocalDishes(next);
-  }
-
-  removeLocalDishesForMenu(menuId: number) {
-    const next = this.getStoredLocalDishes().filter((item: any) => Number(item.menuId) !== Number(menuId));
-    this.setStoredLocalDishes(next);
   }
 
   getStructuredMenuData(): Observable<any[]> {
@@ -687,7 +684,6 @@ export class ProxyService {
               ...menu,
               dishes: localDishes.filter((dish: any) => Number(dish.menuId) === Number(menu.id))
             }));
-
           return {
             ...restaurant,
             menus: restaurantMenus,
@@ -714,7 +710,7 @@ export class ProxyService {
 
   getRestaurantCardsForShowcase(): Observable<any[]> {
     return this.getStructuredMenuData().pipe(
-      map((restaurants) => restaurants.filter((restaurant: any) => restaurant.dishes.length > 0))
+      map((restaurants) => restaurants.filter((r: any) => r.dishes.length > 0))
     );
   }
 
@@ -750,18 +746,6 @@ export class ProxyService {
     return combineLatest([this.getCustomers(), this.watchIsAdmin()]).pipe(map(([customers]) => customers));
   }
 
-  getImageUrl(imageUrl?: string | null): string {
-    if (!imageUrl) {
-      return 'assets/no-image.png';
-    }
-
-    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:image')) {
-      return imageUrl;
-    }
-
-    return `${imageUrl}`;
-  }
-
   getReservationStatusSummary(): Observable<any[]> {
     return this.watchMyReservations().pipe(
       map((reservations) => {
@@ -771,10 +755,9 @@ export class ProxyService {
           { statusId: 2, label: 'Confirmed' },
           { statusId: 3, label: 'Canceled' },
         ];
-
         return source.map((item) => ({
           ...item,
-          count: all.filter((reservation: any) => Number(reservation.statusId) === item.statusId).length,
+          count: all.filter((r: any) => Number(r.statusId) === item.statusId).length,
         }));
       })
     );
@@ -799,104 +782,25 @@ export class ProxyService {
     );
   }
 
+  // ─── AVATAR / UI HELPERS ─────────────────────────────────────────────────────
+
   saveProfileImage(_profile: any, imageDataUrl: string) {
     localStorage.setItem('profile_avatar', imageDataUrl);
     this.refreshProfile();
   }
 
-  getStatusLabel(statusId: number): string {
-    switch (Number(statusId)) {
-      case 1:
-        return 'Pending';
-      case 2:
-        return 'Confirmed';
-      case 3:
-        return 'Canceled';
-      default:
-        return `Status ${statusId}`;
-    }
-  }
-
-  getStatusClass(statusId: number): string {
-    switch (Number(statusId)) {
-      case 1:
-        return 'pending';
-      case 2:
-        return 'confirmed';
-      case 3:
-        return 'canceled';
-      default:
-        return 'unknown';
-    }
-  }
-
-  formatDate(value?: string | null): string {
-    if (!value) {
-      return 'N/A';
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
-
-    return date.toLocaleString();
-  }
-
-  getDisplayName(profile: any): string {
-    const firstName = profile?.person?.firstName?.trim?.() || '';
-    const lastName = profile?.person?.lastName?.trim?.() || '';
-    const fullName = `${firstName} ${lastName}`.trim();
-
-    if (fullName) {
-      return fullName;
-    }
-
-    return profile?.user?.username || 'Guest User';
-  }
-
-  getInitials(profile: any): string {
-    const first = profile?.person?.firstName?.trim?.()?.charAt(0) || '';
-    const last = profile?.person?.lastName?.trim?.()?.charAt(0) || '';
-    const initials = `${first}${last}`.trim();
-
-    if (initials) {
-      return initials.toUpperCase();
-    }
-
-    const username = profile?.user?.username?.trim?.() || 'G';
-    return username.charAt(0).toUpperCase();
-  }
-
-  getAvatarColor(profile: any): string {
-    const name = this.getDisplayName(profile);
-    const palette = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626', '#db2777'];
-    let hash = 0;
-
-    for (let i = 0; i < name.length; i += 1) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    return palette[Math.abs(hash) % palette.length];
-  }
-
   saveLocalProfileAvatar(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
       reader.onload = () => {
         const result = typeof reader.result === 'string' ? reader.result : '';
-
         if (!result) {
           reject('Image load failed');
           return;
         }
-
         localStorage.setItem('profile_avatar', result);
         resolve(result);
       };
-
       reader.onerror = () => reject('Image load failed');
       reader.readAsDataURL(file);
     });
@@ -915,7 +819,6 @@ export class ProxyService {
     if (stored) {
       return stored;
     }
-
     const initials = this.getInitials(profile);
     const color = encodeURIComponent(this.getAvatarColor(profile));
     const svg = `
@@ -925,7 +828,67 @@ export class ProxyService {
               font-family="Arial, sans-serif" font-size="54" fill="white" font-weight="700">${initials}</text>
       </svg>
     `.trim();
-
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  getImageUrl(imageUrl?: string | null): string {
+    if (!imageUrl) {
+      return 'assets/no-image.png';
+    }
+    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:image')) {
+      return imageUrl;
+    }
+    return `${imageUrl}`;
+  }
+
+  getStatusLabel(statusId: number): string {
+    switch (Number(statusId)) {
+      case 1: return 'Pending';
+      case 2: return 'Confirmed';
+      case 3: return 'Canceled';
+      default: return `Status ${statusId}`;
+    }
+  }
+
+  getStatusClass(statusId: number): string {
+    switch (Number(statusId)) {
+      case 1: return 'pending';
+      case 2: return 'confirmed';
+      case 3: return 'canceled';
+      default: return 'unknown';
+    }
+  }
+
+  formatDate(value?: string | null): string {
+    if (!value) return 'N/A';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString();
+  }
+
+  getDisplayName(profile: any): string {
+    const firstName = profile?.person?.firstName?.trim?.() || '';
+    const lastName = profile?.person?.lastName?.trim?.() || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    return fullName || profile?.user?.username || 'Guest User';
+  }
+
+  getInitials(profile: any): string {
+    const first = profile?.person?.firstName?.trim?.()?.charAt(0) || '';
+    const last = profile?.person?.lastName?.trim?.()?.charAt(0) || '';
+    const initials = `${first}${last}`.trim();
+    if (initials) return initials.toUpperCase();
+    const username = profile?.user?.username?.trim?.() || 'G';
+    return username.charAt(0).toUpperCase();
+  }
+
+  getAvatarColor(profile: any): string {
+    const name = this.getDisplayName(profile);
+    const palette = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626', '#db2777'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i += 1) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return palette[Math.abs(hash) % palette.length];
   }
 }
